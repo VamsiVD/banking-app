@@ -3,5 +3,6 @@ from app.routers import applications
 
 app = FastAPI()
 
+app.include_router()
 
-app.include_router(applications.router)
+
