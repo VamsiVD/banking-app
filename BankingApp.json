@@ -41,7 +41,7 @@
       "type": "string",
       "minLength": 3,
       "maxLength": 3,
-      "description": "ISO 4217 currency code, e.g. USD"
+      "description": "ISO 4217 c  urrency code, e.g. USD"
     },
     "date_opened": {
       "type": "string",
