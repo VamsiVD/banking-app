@@ -1,4 +1,4 @@
-# banking-app
+# Banking-app
 
 Training project: a banking backend API in Python + FastAPI.
 
