@@ -14,7 +14,8 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from app.schemas.models import BankAccount, Transaction, TransactionType
+from app.schemas.account_schema import BankAccount
+from app.schemas.transaction_schema import Transaction, TransactionType
 
 _accounts: dict[str, BankAccount] = {}
 _entries: list[Transaction] = []

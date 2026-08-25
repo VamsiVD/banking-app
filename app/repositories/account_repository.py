@@ -7,7 +7,7 @@ that changes — callers never touch `store` directly.
 from decimal import Decimal
 
 from app.core import store
-from app.schemas.models import BankAccount
+from app.schemas.account_schema import BankAccount
 
 
 def get(account_number: str) -> BankAccount | None:
