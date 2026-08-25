@@ -5,7 +5,7 @@ contract, so keep the two in step. If you need a field the schema does not have,
 change the schema in the same PR.
 """
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Annotated
@@ -56,3 +56,37 @@ class BankAccount(BankAccountCreate):
 
     # Always set by the time an account is stored, so it is not optional here.
     date_opened: date
+
+
+class TransactionType(str, Enum):
+    deposit = "deposit"
+    withdrawal = "withdrawal"
+    transfer_in = "transfer_in"
+    transfer_out = "transfer_out"
+
+
+# Amounts on a movement are strictly positive; direction is carried by the type,
+# never by a negative number. A "deposit of -50" should be impossible to express.
+PositiveMoney = Annotated[Decimal, Field(gt=0, max_digits=18, decimal_places=2)]
+
+
+class Transaction(BaseModel):
+    """One immutable entry in the ledger.
+
+    Written by the transactions router, read by the statements router. Nothing
+    edits or deletes an entry — a correction is a new entry in the other
+    direction. That is what makes the ledger auditable.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    account_number: AccountNumber
+    type: TransactionType
+    amount: PositiveMoney
+    currency: Currency
+    balance_after: Money
+    # The other side of a transfer. None for deposits and withdrawals.
+    counterparty: AccountNumber | None = None
+    description: str | None = Field(default=None, max_length=200)
+    timestamp: datetime
