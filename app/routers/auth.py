@@ -1,35 +1,43 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-
-from app.schemas.auth_schema import (
-    RegisterRequest,
-    LoginRequest,
-    TokenResponse,
-    UserProfile,
+from app.repositories.user_repository import user_repository
+from app.schemas.auth_schema import LoginRequest, RegisterRequest, UserProfile
+from app.services.auth_service import (
+    AuthService,
+    EmailAlreadyRegisteredError,
+    InvalidCredentialsError,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+def get_auth_service() -> AuthService:
+    return AuthService(user_repository)
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> UserProfile:
-    # TODO: decode + verify JWT, load user, raise 401 on failure/expiry
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "get_current_user not implemented")
+def _to_profile(user: dict) -> UserProfile:
+    return UserProfile(
+        id=user["id"],
+        email=user["email"],
+        full_name=user["full_name"],
+        created_at=user["created_at"],
+    )
 
 
 @router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest) -> UserProfile:
-    # TODO: check email not taken, bcrypt-hash password, persist user
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "register not implemented")
+def register(payload: RegisterRequest, service: AuthService = Depends(get_auth_service)) -> UserProfile:
+    try:
+        user = service.register_user(payload)
+    except EmailAlreadyRegisteredError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+
+    return _to_profile(user)
 
 
-@router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest) -> TokenResponse:
-    # TODO: look up user by email, verify password hash, issue JWT
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "login not implemented")
+@router.post("/login", response_model=UserProfile)
+def login(payload: LoginRequest, service: AuthService = Depends(get_auth_service)) -> UserProfile:
+    try:
+        user = service.authenticate_user(payload)
+    except InvalidCredentialsError as e:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e))
 
-
-@router.get("/me", response_model=UserProfile)
-def read_current_user(current_user: UserProfile = Depends(get_current_user)) -> UserProfile:
-    return current_user
+    return _to_profile(user)

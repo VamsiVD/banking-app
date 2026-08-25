@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
@@ -13,11 +12,6 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr = Field(..., max_length=255, description="user email, used as login id")
     password: str = Field(..., min_length=8, max_length=128, description="plain text password, checked against stored hash")
-
-
-class TokenResponse(BaseModel):
-    access_token: str = Field(..., description="JWT access token")
-    token_type: Literal["bearer"] = Field(default="bearer", description="type of token returned")
 
 
 class UserProfile(BaseModel):
