@@ -12,7 +12,7 @@ refuse is ruled out before either balance is written.
 
 from app.core import store, transfer_rules
 from app.errors import AccountNotFound
-from app.schemas.models import TransactionType
+from app.schemas.transaction_schema import TransactionType
 from app.repositories import account_repository
 from app.schemas.transfer_schema import TransferRequest, TransferResult
 

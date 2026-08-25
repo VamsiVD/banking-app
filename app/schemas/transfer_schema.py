@@ -7,7 +7,8 @@ precision loss we are avoiding.
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.schemas.models import AccountNumber, PositiveMoney, Transaction
+from app.schemas.primitives import AccountNumber, PositiveMoney
+from app.schemas.transaction_schema import Transaction
 
 
 class TransferRequest(BaseModel):
