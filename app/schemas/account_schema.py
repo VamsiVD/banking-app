@@ -1,38 +1,29 @@
-"""Account domain: types, create request, and stored/returned shape.
-
-`BankAccountCreate` is a direct translation of BankingApp.json — that file is
-the contract, so keep the two in step. If you need a field the schema does
-not have, change the schema in the same PR.
-"""
-
 from datetime import date
 from decimal import Decimal
-from enum import Enum
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.primitives import AccountNumber, Currency, Money
+from app.schemas.models import AccountStatus, AccountType
 
 
-class AccountType(str, Enum):
-    checking = "checking"
-    savings = "savings"
-    business = "business"
-    fixed_deposit = "fixed_deposit"
+Money = Annotated[
+    Decimal,
+    Field(ge=0, max_digits=18, decimal_places=2)
+]
 
+AccountNumber = Annotated[
+    str,
+    Field(min_length=1, max_length=34)
+]
 
-class AccountStatus(str, Enum):
-    active = "active"
-    inactive = "inactive"
-    frozen = "frozen"
-    closed = "closed"
+Currency = Annotated[
+    str,
+    Field(min_length=3, max_length=3, pattern=r"^[A-Z]{3}$")
+]
 
 
 class BankAccountCreate(BaseModel):
-    """Request body for creating an account."""
-
-    # Mirrors "additionalProperties": false in BankingApp.json — an unexpected
-    # key is a client bug, and silently dropping it hides the bug.
     model_config = ConfigDict(extra="forbid")
 
     account_number: AccountNumber
@@ -44,8 +35,11 @@ class BankAccountCreate(BaseModel):
     date_opened: date | None = None
 
 
-class BankAccount(BankAccountCreate):
-    """An account as stored and returned by the API."""
-
-    # Always set by the time an account is stored, so it is not optional here.
+class BankAccountResponse(BaseModel):
+    account_number: AccountNumber
+    account_holder_name: str
+    account_type: AccountType
+    status: AccountStatus
+    balance: Money
+    currency: Currency
     date_opened: date
