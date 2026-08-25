@@ -1,0 +1,10 @@
+# Direct dependencies only. Pip resolves the rest.
+# Regenerate with care: `pip freeze` on Windows/PowerShell writes UTF-16,
+# which pip cannot read back. Edit this file by hand instead.
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.4
+
+# Testing
+pytest==8.3.4
+httpx==0.28.1
