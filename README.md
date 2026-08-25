@@ -41,7 +41,7 @@ docker compose logs -f db        # follow the logs
 docker compose exec db psql -U banking -d banking    # a psql shell
 docker compose down              # stop, keep the data
 docker compose down -v           # stop and wipe the data volume
-pytest                           # 72 tests; needs Postgres running
+pytest                           # 60 pass, 12 skipped; needs Postgres running
 ```
 
 ## Layout
