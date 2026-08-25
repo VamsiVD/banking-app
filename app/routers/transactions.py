@@ -1,36 +1,54 @@
-"""Money movement — deposits, withdrawals, transfers.
+"""Money movement — deposits and withdrawals.
 
 Owner: utoker
 Branch: feat/transactions
 
-Endpoints to build here:
-    POST /accounts/{account_number}/deposit    add funds
-    POST /accounts/{account_number}/withdraw   remove funds
-    POST /transfers                            move funds between two accounts
-
-Notes:
-  - Amounts are Decimal and strictly positive (models.PositiveMoney). A zero or
-    negative deposit is a validation error, not a no-op.
-  - Only `active` accounts move money. Anything else is AccountNotActive (409).
-  - Overdrawing is InsufficientFunds (409).
-  - A transfer between different currencies is CurrencyMismatch (409) — this API
-    does no FX conversion.
-  - A transfer to and from the same account should be rejected, not silently
-    succeed as a no-op.
-
-  - Wrap every read-modify-write in `with store.transaction():`. A transfer
-    touches two accounts and must not interleave with another request.
-  - Write a ledger entry for every movement, inside that same block, so a balance
-    and its history can never disagree.
+Endpoints:
+    POST /accounts/{account_number}/deposit
+    POST /accounts/{account_number}/withdraw
 """
 
-from fastapi import APIRouter, HTTPException
+from datetime import date
+from decimal import Decimal
+
+from fastapi import APIRouter
 
 from app import ledger, store
-from app.models import MoneyMovement, TransactionType
+from app.errors import AccountNotActive, AccountNotFound, InsufficientFunds
+from app.models import (
+    AccountStatus,
+    AccountType,
+    BankAccount,
+    MoneyMovement,
+    TransactionType,
+)
+from app.routers.BankProfile import accounts as profile_accounts
 
 
 router = APIRouter(tags=["transactions"])
+
+
+def load_accounts():
+    """Load the sample accounts from BankProfile into the shared store."""
+
+    if store.list_all():
+        return
+
+    for account in profile_accounts:
+        bank_account = BankAccount(
+            account_number=account["account_number"],
+            account_holder_name=account["account_holder_name"],
+            account_type=AccountType(account["account_type"]),
+            status=AccountStatus(account["status"]),
+            balance=Decimal(str(account["balance"])),
+            currency=account["currency"],
+            date_opened=date.fromisoformat(account["date_opened"]),
+        )
+
+        store.add(bank_account)
+
+
+load_accounts()
 
 
 @router.post("/accounts/{account_number}/deposit")
@@ -40,18 +58,21 @@ def deposit(account_number: str, movement: MoneyMovement):
         account = store.get(account_number)
 
         if account is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Account not found"
+            raise AccountNotFound(
+                f"No account with number {account_number!r}."
             )
 
-        if account.status != "active":
-            raise HTTPException(
-                status_code=409,
-                detail="Account is not active"
+        if account.status is not AccountStatus.active:
+            raise AccountNotActive(
+                f"Account {account_number!r} is not active."
             )
 
-        account.balance += movement.amount
+        account = account.model_copy(
+            update={
+                "balance": account.balance + movement.amount
+            }
+        )
+
         store.put(account)
 
         transaction = ledger.record(
@@ -76,24 +97,26 @@ def withdraw(account_number: str, movement: MoneyMovement):
         account = store.get(account_number)
 
         if account is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Account not found"
+            raise AccountNotFound(
+                f"No account with number {account_number!r}."
             )
 
-        if account.status != "active":
-            raise HTTPException(
-                status_code=409,
-                detail="Account is not active"
+        if account.status is not AccountStatus.active:
+            raise AccountNotActive(
+                f"Account {account_number!r} is not active."
             )
 
         if movement.amount > account.balance:
-            raise HTTPException(
-                status_code=409,
-                detail="Insufficient funds"
+            raise InsufficientFunds(
+                f"Account {account_number!r} has insufficient funds."
             )
 
-        account.balance -= movement.amount
+        account = account.model_copy(
+            update={
+                "balance": account.balance - movement.amount
+            }
+        )
+
         store.put(account)
 
         transaction = ledger.record(
