@@ -69,6 +69,13 @@ class TransactionType(str, Enum):
 # never by a negative number. A "deposit of -50" should be impossible to express.
 PositiveMoney = Annotated[Decimal, Field(gt=0, max_digits=18, decimal_places=2)]
 
+class MoneyMovement(BaseModel):
+    """Request body for a deposit or withdrawal."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    amount: PositiveMoney
+    description: str | None = Field(default=None, max_length=200)
 
 class Transaction(BaseModel):
     """One immutable entry in the ledger.
