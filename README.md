@@ -1,74 +1,75 @@
 # Banking-app
 
-Training project: a banking backend API in Python + FastAPI, on PostgreSQL.
+Training project: a banking backend API in Python + FastAPI.
 
-**Scope for this phase — API + database + auth.** No frontend. Accounts, the
-ledger and users live in Postgres and survive a restart. Schema changes go through
-Alembic migrations, so tell the group before you change a table everyone shares.
+**Scope for this phase — API only, in-memory storage.** No real database yet —
+accounts, the transaction ledger, and registered users all live in
+process-memory structures under `app/core/` and `app/repositories/`, and reset
+whenever the server restarts. That is deliberate; do not add persistence
+without agreeing it with the team first.
+
+The API now covers accounts, deposits/withdrawals, transfers between
+accounts, and basic auth (register/login). Listing/filtering and statements
+are still open slices — see the table below.
 
 ## Running it
-
-You need Docker. On WSL/Ubuntu, `bash scripts/install-docker-wsl.sh` installs it;
-on macOS or plain Windows, install Docker Desktop.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-cp .env.example .env             # once; .env is gitignored
-docker compose up -d --wait      # starts Postgres, waits until it is ready
-alembic upgrade head             # creates the tables
-python -m scripts.seed           # optional: the five demo accounts
-
 uvicorn app.main:app --reload
 ```
 
-Then open http://127.0.0.1:8000/docs — the interactive OpenAPI page is our front
-end for this phase. `GET /health` returns `{"status": "ok"}`, and `GET /health/db`
-tells you whether the database is actually reachable.
+Auth needs `AUTH_SECRET_KEY` set — copy `.env.example` to `.env` if one
+exists, or set it yourself; `app/main.py` loads it with `python-dotenv`.
 
-**After every pull, run `alembic upgrade head`.** If a teammate added a table and
-you skipped it, you get a confusing error about a missing column rather than a
-clear one about a missing migration.
-
-### Everyday Docker
-
-```bash
-docker compose up -d --wait      # start (blocks until Postgres accepts connections)
-docker compose ps                # status — you want "Up (healthy)"
-docker compose logs -f db        # follow the logs
-docker compose exec db psql -U banking -d banking    # a psql shell
-docker compose down              # stop, keep the data
-docker compose down -v           # stop and wipe the data volume
-pytest                           # 60 pass, 12 skipped; needs Postgres running
-```
+Then open http://127.0.0.1:8000/docs — the interactive OpenAPI page is our
+front end for this phase. `GET /health` should return `{"status": "ok"}`.
 
 ## Layout
 
+The app follows one layering rule throughout: **router (API) → service →
+core (rules + store) → repository → schema.** A router only translates HTTP
+in and out; a service holds the business logic; core rules are pure
+validation with no I/O; repositories are thin wrappers over the store;
+schemas are the Pydantic shapes that cross every boundary.
+
 | File | What lives there |
 |---|---|
-| `app/main.py` | App setup. Every router is registered here already. |
-| `app/config.py` | Settings from `.env`. `DATABASE_URL` lives here and nowhere else. |
-| `app/db.py` | Engine, per-request session, and the transaction primitive. |
-| `app/tables.py` | SQLAlchemy tables — the database's shape. |
-| `app/core/store.py` | Accounts and the ledger. Go through these functions, not raw SQL. |
-| `app/core/transfer_rules.py` | Pure transfer policy — no I/O. |
-| `app/core/security.py` | Password hashing. |
+| `app/main.py` | App setup. Every router is already registered — you should not need to edit this. |
 | `app/errors.py` | Shared error types and the single error response shape. |
-| `app/schemas/` | Pydantic request/response models. `models.py` mirrors `BankingApp.json`. |
-| `app/repositories/` | Data access for the services. |
-| `app/services/` | Business logic — transfers, auth. |
-| `app/routers/` | HTTP controllers, one slice per file. |
-| `alembic/versions/` | Migrations. One file per schema change, committed with the change. |
-| `scripts/seed.py` | The five demo accounts. Idempotent. |
+| `app/core/store.py` | The in-memory account + ledger store. Go through these functions, never the underlying dict. |
+| `app/core/transfer_rules.py` | Pure transfer validation (active account, same currency, sufficient funds) — no I/O. |
+| `app/core/security.py` | Password hashing/verification for auth. |
+| `app/repositories/account_repository.py` | Account reads/writes, wrapping `core/store.py`. |
+| `app/repositories/transaction_repository.py` | Ledger reads/writes, wrapping `core/store.py`. |
+| `app/repositories/user_repository.py` | Registered-user records, in-memory. |
+| `app/services/transfer_service.py` | Business logic for `/transfers`. |
+| `app/services/transaction_service.py` | Business logic for deposit/withdraw. |
+| `app/services/auth_service.py` | Business logic for register/login. |
+| `app/schemas/primitives.py` | Shared value types (`Money`, `AccountNumber`, `Currency`, `PositiveMoney`). |
+| `app/schemas/account_schema.py` | Account request/response shapes. |
+| `app/schemas/transaction_schema.py` | `TransactionType`, deposit/withdraw request, ledger entry shape. |
+| `app/schemas/transfer_schema.py` | Transfer request/response shapes. |
+| `app/schemas/auth_schema.py` | Register/login request, user profile response. |
+| `app/routers/accounts.py` | Create / fetch / list / change status / delete accounts. |
+| `app/routers/auth.py` | Register / login. |
+| `app/routers/transactions.py` | Deposit / withdraw. |
+| `app/routers/transfers.py` | Transfer funds between two accounts. |
+| `app/routers/queries.py` | List, filter, page, sort accounts — **unclaimed, still a stub.** |
+| `app/routers/statements.py` | Transaction history and statements — **unclaimed, still a stub.** |
 
 ## Conventions
 
+These are the things that cut across everyone's work, so they are not up for
+per-file interpretation:
+
 - **`BankingApp.json` is the contract.** Changing a field means changing the
-  schema in the same PR. Same for `AuthSchema.json`.
-- **Money is `Decimal`, never `float`.** Floats lose cents. `balance` and `amount`
-  are `NUMERIC(18,2)` and the database rejects anything else.
+  schema in the same PR.
+- **Money is `Decimal`, never `float`.** Floats lose cents. Use the shared
+  `Money`/`PositiveMoney` types from `app/schemas/primitives.py` instead of
+  redeclaring the constraint.
 - **One error shape.** Raise the classes in `app/errors.py`; do not raise
   `HTTPException` directly and do not invent a new response body.
 - **Reach the store through its functions**, and wrap any read-modify-write
@@ -76,81 +77,21 @@ pytest                           # 60 pass, 12 skipped; needs Postgres running
 - **Every movement of money writes a ledger entry**, in the same
   `store.transaction()` block that changes the balance. The ledger is
   append-only: corrections are new entries, never edits.
-
-## Working with the database
-
-Nothing about how you write a router changed when Postgres landed. `store.get()`
-still returns a `BankAccount`, `store.put()` still writes one back, and
-`store.transaction()` still wraps a read-modify-write. Two things are better:
-
-- **`transaction()` really rolls back.** It used to be a mutex, which stopped two
-  requests interleaving but could not undo a change once made. If your handler
-  raises halfway through, the whole block reverts.
-- **`get()` inside a `transaction()` block locks the row** (`SELECT ... FOR
-  UPDATE`) until the block ends. That is what stops two concurrent withdrawals
-  from both passing the same balance check.
-
-If you are about to write to **two** accounts, take them together with
-`store.get_many_for_update([a, b])` rather than two `get()` calls. It sorts before
-locking; locking in request order lets A→B and B→A deadlock, and Postgres resolves
-that by killing one of them.
-
-**Writing real queries.** `store.list_all()` returns every account. For filtering,
-sorting and paging — the queries and statements slices — do it in SQL instead:
-
-```python
-from fastapi import Depends
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from app.db import get_session
-from app.tables import AccountRow
-
-@router.get("/accounts")
-def list_accounts(status: str | None = None, db: Session = Depends(get_session)):
-    stmt = select(AccountRow).order_by(AccountRow.account_number).limit(50)
-    if status:
-        stmt = stmt.where(AccountRow.status == status)
-    return [... for row in db.scalars(stmt)]
-```
-
-**Changing the schema.** Edit `app/tables.py`, then:
-
-```bash
-alembic revision --autogenerate -m "add statements view"   # writes the migration
-alembic upgrade head                                       # applies it
-```
-
-Read the generated file before committing — autogenerate is good at columns and
-bad at intent. One trap: name a CHECK constraint **without** the `ck_<table>_`
-prefix, because the naming convention in `tables.py` adds it; spelling the full
-name gets it applied twice and autogenerate then reports a diff forever.
-
-Commit the migration in the same PR as the table change, and say so in the group
-chat so everyone knows to upgrade.
+- **Keep the layering.** A router calls a service; a service calls repositories
+  and core rules; a repository is the only thing that touches `core/store.py`.
+  Do not have a router reach into `store` or a repository directly.
 
 ## Working together
 
-Branch off `api_endpoint_test`, one branch per slice:
+Branch off `main`, one branch per slice, PR back into `VamsiVD/banking-app`:
 
 ```bash
 git fetch upstream
-git checkout -b feat/<slice> upstream/api_endpoint_test
+git checkout -b feat/<slice> upstream/main
 ```
 
-Each person owns one file under `app/routers/`. Shared files (`main.py`,
-`errors.py`, `db.py`, `tables.py`, `config.py`, `core/store.py`) are stable — if
-you need to change one, say so in the group first, because everyone else is
-building on it.
-
-## Known gap: deposit and withdraw
-
-`POST /accounts/{n}/deposit` and `/withdraw` in `app/routers/transactions.py`
-currently echo the request body back. They do not change a balance and they do not
-write a ledger entry, so money only moves through `POST /transfers` today.
-
-Everything they need is in place — `store.transaction()`, `store.get()` under a
-row lock, `store.put()`, `store.record()`. The transfers slice is the worked
-example, and `tests/test_transactions.py` already describes the intended
-behaviour: twelve cases are skipped behind one marker at the top of that file.
-Wire the endpoints to the store, delete the marker, and they should pass.
+Each person owns one file under `app/routers/`. Shared files (`app/main.py`,
+`app/errors.py`, `app/core/store.py`, the `app/schemas/` and
+`app/repositories/` modules) are stable after the skeleton lands — if you need
+to change one, say so in the group first, because everyone else is building
+on it.
