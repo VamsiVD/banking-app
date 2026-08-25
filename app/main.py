@@ -8,14 +8,11 @@ That is on purpose: it means nobody has to edit this file to add their endpoints
 so three people can work in parallel without colliding on it.
 """
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from fastapi import FastAPI
 
 from app.errors import install_error_handlers
-from app.routers import accounts, auth, queries, statements, transactions, transfers
+from app.routers import accounts, queries, statements, transactions, BankProfile
+from app.routers import accounts, queries, statements, transactions, transfers
 
 app = FastAPI(
     title="Banking API",
@@ -24,7 +21,8 @@ app = FastAPI(
 )
 
 install_error_handlers(app)
-app.include_router(auth.router)
+
+app.include_router(BankProfile.router)
 app.include_router(accounts.router)
 app.include_router(queries.router)
 app.include_router(transactions.router)
