@@ -13,16 +13,16 @@ from decimal import Decimal
 
 from fastapi import APIRouter
 
-from app import ledger, store
+from app.core import store
 from app.errors import AccountNotActive, AccountNotFound, InsufficientFunds
-from app.models import (
+from app.schemas.models import (
     AccountStatus,
     AccountType,
     BankAccount,
     MoneyMovement,
     TransactionType,
 )
-from app.routers.BankProfile import accounts as profile_accounts
+from app.routers.accounts import accounts as profile_accounts
 
 
 router = APIRouter(tags=["transactions"])
