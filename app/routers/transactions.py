@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
-from app.schemas.transaction_schema import MoneyMovement
+from app.schemas.transaction_schema import MoneyMovement, Transaction
+from app.services import transaction_service
 
 
 router = APIRouter(tags=["transactions"])
@@ -8,25 +9,23 @@ router = APIRouter(tags=["transactions"])
 
 @router.post(
     "/accounts/{account_number}/deposit",
-    summary="Deposit",
-    description="Add funds to an active account.",
+    response_model=Transaction,
+    summary="Deposit funds into an account",
 )
-def deposit(account_number: str, movement: MoneyMovement):
-    return {
-        "account_number": account_number,
-        "amount": movement.amount,
-        "description": movement.description,
-    }
+def deposit(
+    account_number: str,
+    movement: MoneyMovement,
+) -> Transaction:
+    return transaction_service.deposit(account_number, movement)
 
 
 @router.post(
     "/accounts/{account_number}/withdraw",
-    summary="Withdraw",
-    description="Remove funds from an active account.",
+    response_model=Transaction,
+    summary="Withdraw funds from an account",
 )
-def withdraw(account_number: str, movement: MoneyMovement):
-    return {
-        "account_number": account_number,
-        "amount": movement.amount,
-        "description": movement.description,
-    }
+def withdraw(
+    account_number: str,
+    movement: MoneyMovement,
+) -> Transaction:
+    return transaction_service.withdraw(account_number, movement)
