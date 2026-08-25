@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict
 from app.core import store
 from app.errors import AccountNotFound
 from app.schemas.account_schema import BankAccountCreate, BankAccountResponse
-from app.schemas.models import AccountStatus, BankAccount
+from app.schemas.account_schema import AccountStatus, BankAccount
 
 router = APIRouter(prefix="/accounts", tags=["Bank Profile"])
 

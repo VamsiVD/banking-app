@@ -27,7 +27,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from app.schemas.models import AccountStatus, AccountType, TransactionType
+from app.schemas.account_schema import AccountStatus, AccountType
+from app.schemas.transaction_schema import TransactionType
 
 # Deterministic constraint names. Without this Postgres invents them, and an
 # Alembic migration that wants to drop a constraint has nothing stable to name.
