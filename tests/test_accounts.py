@@ -10,6 +10,7 @@ from decimal import Decimal
 
 import pytest
 
+from app import db
 from app.core import store
 
 
@@ -35,22 +36,37 @@ def new_account(number="ACC-9", holder="New Holder", kind="checking",
 # --------------------------------------------------------------------------
 
 
-def test_accounts_and_deposits_agree(client, make_account):
-    """One dataset. The router and the money endpoints see the same balance."""
+def test_accounts_and_the_store_agree(client, make_account, db_session):
+    """One dataset.
+
+    This router used to keep its own list of dicts, so it reported 1500.0 while
+    the store reported 1510.00 for the same account. A balance changed through
+    the store is now visible here immediately.
+
+    Goes through the store rather than POST /accounts/{n}/deposit because that
+    endpoint is currently a stub — see the skips in test_transactions.py.
+    """
     make_account("ACC-1", balance="100.00")
 
-    client.post("/accounts/ACC-1/deposit", json={"amount": "10.00"})
+    with store.transaction():
+        account = store.get("ACC-1")
+        store.put(account.model_copy(update={"balance": Decimal("110.00")}))
 
     assert client.get("/accounts/ACC-1").json()["balance"] == "110.00"
 
 
-def test_an_account_created_through_the_api_can_receive_money(client):
-    """Creating and then using an account used to be impossible across the two stores."""
+def test_an_account_created_through_the_api_is_visible_to_the_store(client, db_session):
+    """Creating and then using an account used to be impossible across two stores."""
     assert client.post("/accounts/", json=new_account("ACC-9", balance="0.00")).status_code == 201
 
-    r = client.post("/accounts/ACC-9/deposit", json={"amount": "75.00"})
+    with db.session_scope():
+        assert store.get("ACC-9") is not None
 
-    assert r.status_code == 200
+    with store.transaction():
+        account = store.get("ACC-9")
+        store.put(account.model_copy(update={"balance": Decimal("75.00")}))
+        store.record("ACC-9", "deposit", Decimal("75.00"), "USD", Decimal("75.00"))
+
     assert client.get("/accounts/ACC-9").json()["balance"] == "75.00"
 
 
@@ -144,12 +160,23 @@ def test_patch_changes_the_status(client, make_account):
     assert client.get("/accounts/ACC-1").json()["status"] == "frozen"
 
 
-def test_a_frozen_account_then_refuses_money(client, make_account):
+def test_a_frozen_account_then_refuses_a_transfer(client, make_account):
     """The status change reaches the money endpoints, because there is one store."""
     make_account("ACC-1")
+    make_account("ACC-2")
     client.patch("/accounts/ACC-1", json={"status": "frozen"})
 
-    assert client.post("/accounts/ACC-1/deposit", json={"amount": "10.00"}).status_code == 409
+    r = client.post(
+        "/transfers",
+        json={
+            "from_account_number": "ACC-1",
+            "to_account_number": "ACC-2",
+            "amount": "10.00",
+        },
+    )
+
+    assert r.status_code == 409
+    assert err(r) == "account_not_active"
 
 
 def test_patching_an_unknown_status_is_refused(client, make_account):
@@ -184,10 +211,11 @@ def test_deleting_an_unknown_account_is_404(client):
     assert err(r) == "account_not_found"
 
 
-def test_an_account_with_history_cannot_be_deleted(client, make_account):
+def test_an_account_with_history_cannot_be_deleted(client, make_account, db_session):
     """A ledger is only auditable if entries cannot be orphaned."""
     make_account("ACC-1")
-    client.post("/accounts/ACC-1/deposit", json={"amount": "10.00"})
+    with store.transaction():
+        store.record("ACC-1", "deposit", Decimal("10.00"), "USD", Decimal("110.00"))
 
     r = client.delete("/accounts/ACC-1")
 

@@ -143,10 +143,14 @@ Each person owns one file under `app/routers/`. Shared files (`main.py`,
 you need to change one, say so in the group first, because everyone else is
 building on it.
 
-## Known inconsistency
+## Known gap: deposit and withdraw
 
-`app/routers/transactions.py` raises `HTTPException` directly, so
-`/accounts/{n}/deposit` and `/withdraw` answer with FastAPI's `{"detail": "..."}`
-instead of the `{"error": {"code", "message"}}` envelope every other endpoint
-uses, and they return 200 where the other write endpoints return 201. The tests
-assert the current behaviour. Converging it is that file owner's call.
+`POST /accounts/{n}/deposit` and `/withdraw` in `app/routers/transactions.py`
+currently echo the request body back. They do not change a balance and they do not
+write a ledger entry, so money only moves through `POST /transfers` today.
+
+Everything they need is in place — `store.transaction()`, `store.get()` under a
+row lock, `store.put()`, `store.record()`. The transfers slice is the worked
+example, and `tests/test_transactions.py` already describes the intended
+behaviour: twelve cases are skipped behind one marker at the top of that file.
+Wire the endpoints to the store, delete the marker, and they should pass.
