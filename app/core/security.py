@@ -1,5 +1,6 @@
 import bcrypt
 
+# Helper for auth_service
 
 def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt())

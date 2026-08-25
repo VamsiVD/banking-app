@@ -1,17 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from app.repositories.user_repository import user_repository
+from fastapi import APIRouter, HTTPException, status
 from app.schemas.auth_schema import LoginRequest, RegisterRequest, UserProfile
-from app.services.auth_service import (
-    AuthService,
-    EmailAlreadyRegisteredError,
-    InvalidCredentialsError,
-)
+from app.services import auth_service
+from app.services.auth_service import EmailAlreadyRegisteredError, InvalidCredentialsError
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-
-def get_auth_service() -> AuthService:
-    return AuthService(user_repository)
 
 
 def _to_profile(user: dict) -> UserProfile:
@@ -24,9 +16,9 @@ def _to_profile(user: dict) -> UserProfile:
 
 
 @router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, service: AuthService = Depends(get_auth_service)) -> UserProfile:
+def register(payload: RegisterRequest) -> UserProfile:
     try:
-        user = service.register_user(payload)
+        user = auth_service.register_user(payload)
     except EmailAlreadyRegisteredError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
 
@@ -34,9 +26,9 @@ def register(payload: RegisterRequest, service: AuthService = Depends(get_auth_s
 
 
 @router.post("/login", response_model=UserProfile)
-def login(payload: LoginRequest, service: AuthService = Depends(get_auth_service)) -> UserProfile:
-    try:
-        user = service.authenticate_user(payload)
+def login(payload: LoginRequest) -> UserProfile:
+    try:  
+        user = auth_service.authenticate_user(payload)
     except InvalidCredentialsError as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e))
 
