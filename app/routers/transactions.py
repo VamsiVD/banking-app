@@ -26,8 +26,8 @@ Notes:
 
 from fastapi import APIRouter, HTTPException
 
-from app import ledger, store
-from app.models import MoneyMovement, TransactionType
+from app.core import store
+from app.schemas.models import MoneyMovement, TransactionType
 
 
 router = APIRouter(tags=["transactions"])
@@ -54,7 +54,7 @@ def deposit(account_number: str, movement: MoneyMovement):
         account.balance += movement.amount
         store.put(account)
 
-        transaction = ledger.record(
+        transaction = store.record(
             account_number=account.account_number,
             type=TransactionType.deposit,
             amount=movement.amount,
@@ -96,7 +96,7 @@ def withdraw(account_number: str, movement: MoneyMovement):
         account.balance -= movement.amount
         store.put(account)
 
-        transaction = ledger.record(
+        transaction = store.record(
             account_number=account.account_number,
             type=TransactionType.withdrawal,
             amount=movement.amount,

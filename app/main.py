@@ -20,7 +20,7 @@ from app.routers import accounts, auth, queries, statements, transactions, trans
 app = FastAPI(
     title="Banking API",
     version="0.1.0",
-    description="Training project. In-memory store, no database, no auth.",
+    description="Training project. In-memory storage, no database.",
 )
 
 install_error_handlers(app)
