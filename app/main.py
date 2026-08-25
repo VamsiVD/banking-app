@@ -11,6 +11,7 @@ so three people can work in parallel without colliding on it.
 from fastapi import FastAPI
 
 from app.errors import install_error_handlers
+from app.routers import accounts, queries, statements, transactions, BankProfile
 from app.routers import accounts, queries, statements, transactions, transfers
 
 app = FastAPI(
@@ -21,6 +22,7 @@ app = FastAPI(
 
 install_error_handlers(app)
 
+app.include_router(BankProfile.router)
 app.include_router(accounts.router)
 app.include_router(queries.router)
 app.include_router(transactions.router)
