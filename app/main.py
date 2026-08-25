@@ -15,27 +15,22 @@ load_dotenv()
 from fastapi import FastAPI
 
 from app.errors import install_error_handlers
-<<<<<<< Updated upstream
-from app.routers import accounts, auth, queries, statements, transactions, transfers, BankProfile
-=======
 from app.routers import (
     accounts,
+    auth,
     queries,
     statements,
     transactions,
     transfers,
-    BankProfile,
 )
->>>>>>> Stashed changes
 
 app = FastAPI(
     title="Banking API",
     version="0.1.0",
-    description="Training project. In-memory store, no database, no auth.",
+    description="Training project. In-memory storage, no database.",
 )
 
 install_error_handlers(app)
-app.include_router(BankProfile.router)
 app.include_router(auth.router)
 app.include_router(accounts.router)
 app.include_router(queries.router)
