@@ -36,7 +36,8 @@ from sqlalchemy.exc import IntegrityError
 from app.db import current_session, in_transaction
 from app.db import transaction as _transaction
 from app.errors import AccountHasHistory, DuplicateAccount
-from app.schemas.models import BankAccount, Transaction, TransactionType
+from app.schemas.account_schema import BankAccount
+from app.schemas.transaction_schema import Transaction, TransactionType
 from app.tables import AccountRow, TransactionRow
 
 

@@ -10,25 +10,37 @@ from decimal import Decimal
 from app.core import store
 from app.schemas.account_schema import BankAccount
 
-
 def get(account_number: str) -> BankAccount | None:
     return store.get(account_number)
 
 
 def get_many_for_update(account_numbers: list[str]) -> dict[str, BankAccount]:
-    """Fetch and lock several accounts at once, for a caller about to write to all.
-
-    Two `get()` calls would lock in the order the request happened to name them,
-    which lets simultaneous A->B and B->A transfers deadlock. This takes them in a
-    fixed order instead. See `store.get_many_for_update`.
-    """
     return store.get_many_for_update(account_numbers)
 
 
-def update_balance(account: BankAccount, balance: Decimal) -> BankAccount:
-    """Return a copy of `account` at a new balance, and store it.
+def get_all() -> list[BankAccount]:
+    return store.list_all()
 
-    A copy rather than an in-place `account.balance = ...` so the write goes
-    through `store.put()` and there is exactly one place a balance changes.
-    """
-    return store.put(account.model_copy(update={"balance": balance}))
+
+def exists(account_number: str) -> bool:
+    return store.exists(account_number)
+
+
+def create(account: BankAccount) -> BankAccount:
+    return store.add(account)
+
+
+def update_balance(account: BankAccount, balance: Decimal) -> BankAccount:
+    return store.put(
+        account.model_copy(update={"balance": balance})
+    )
+
+
+def update_status(account: BankAccount, status: str) -> BankAccount:
+    return store.put(
+        account.model_copy(update={"status": status})
+    )
+
+
+def delete(account_number: str) -> bool:
+    return store.remove(account_number)

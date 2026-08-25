@@ -1,11 +1,23 @@
 from datetime import date
 from decimal import Decimal
+from enum import Enum
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.models import AccountStatus, AccountType
 
+class AccountType(str, Enum):
+    checking = "checking"
+    savings = "savings"
+    business = "business"
+    fixed_deposit = "fixed_deposit"
+
+
+class AccountStatus(str, Enum):
+    active = "active"
+    inactive = "inactive"
+    frozen = "frozen"
+    closed = "closed"
 
 Money = Annotated[
     Decimal,
@@ -33,6 +45,15 @@ class BankAccountCreate(BaseModel):
     balance: Money = Decimal("0.00")
     currency: Currency = "USD"
     date_opened: date | None = None
+
+class BankAccount(BaseModel):
+    account_number: AccountNumber
+    account_holder_name: str
+    account_type: AccountType
+    status: AccountStatus
+    balance: Money
+    currency: Currency
+    date_opened: date
 
 
 class BankAccountResponse(BaseModel):
