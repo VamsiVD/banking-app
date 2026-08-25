@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models import AccountStatus, AccountType
+from app.schemas.models import AccountStatus, AccountType
 
 
 Money = Annotated[

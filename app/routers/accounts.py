@@ -1,125 +1,93 @@
-# Bank Profile - Accounts
-from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException
+"""Account profiles — create, fetch, list, change status, delete.
 
-class BankAccountCreate(BaseModel):
-    account_holder_name: str
-    account_type: str
-    balance: float
-    currency: str
+Reads and writes the shared store, so these endpoints and
+`/accounts/{n}/deposit` now see the same accounts. They used to disagree: this
+file kept its own list of five dicts with float balances, so `GET /accounts/1001`
+answered 1500.0 while a deposit against the same account answered 1510.00.
+
+The demo accounts moved to `scripts/seed.py`. Run it once after migrating:
+
+    python -m scripts.seed
+
+Request and response shapes come from `app.schemas.account_schema`, which mirrors
+BankingApp.json — including `Decimal` balances, because floats lose cents.
+"""
+
+from fastapi import APIRouter
+from pydantic import BaseModel, ConfigDict
+
+from app.core import store
+from app.errors import AccountNotFound
+from app.schemas.account_schema import BankAccountCreate, BankAccountResponse
+from app.schemas.models import AccountStatus, BankAccount
+
+router = APIRouter(prefix="/accounts", tags=["Bank Profile"])
+
 
 class BankAccountUpdate(BaseModel):
-    status: str
+    """Body for a status change. The only field a PATCH may touch."""
 
-router = APIRouter(
-    prefix="/accounts",
-    tags=["Bank Profile"]
-)
+    model_config = ConfigDict(extra="forbid")
 
-# Data - Accounts
-accounts = [
-    {
-        "account_number": "1001",
-        "account_holder_name": "Sana Smith",
-        "account_type": "savings",
-        "balance": 1500.0,
-        "currency": "USD",
-        "date_opened": "2026-08-25",
-        "status": "active"
-    },
-{
-        "account_number": "1002",
-        "account_holder_name": "Alex Walker",
-        "account_type": "checking",
-        "balance": 800.0,
-        "currency": "USD",
-        "date_opened": "2026-08-25",
-        "status": "active"
-    },
-    {
-        "account_number": "1003",
-        "account_holder_name": "Ria Sen",
-        "account_type": "business",
-        "balance": 5200.0,
-        "currency": "USD",
-        "date_opened": "2026-08-20",
-        "status": "active"
-    },
-{
-        "account_number": "1004",
-        "account_holder_name": "Dylan Sharma",
-        "account_type": "fixed_deposit",
-        "balance": 10000.0,
-        "currency": "USD",
-        "date_opened": "2026-08-18",
-        "status": "inactive"
-    },
-    {
-        "account_number": "1005",
-        "account_holder_name": "Rinal Das",
-        "account_type": "checking",
-        "balance": 250.0,
-        "currency": "USD",
-        "date_opened": "2026-08-15",
-        "status": "frozen"
-    }
-]
+    status: AccountStatus
+
+
+def _require(account_number: str) -> BankAccount:
+    account = store.get(account_number)
+    if account is None:
+        raise AccountNotFound(f"No account with number {account_number!r}.")
+    return account
+
 
 # Read
-@router.get("/")
-def return_all_accounts():
-    return accounts
+@router.get("/", response_model=list[BankAccountResponse])
+def return_all_accounts() -> list[BankAccount]:
+    return store.list_all()
 
-@router.get("/{account_number}")
-def get_account(account_number: str):
-    for account in accounts:
-        if account["account_number"] == account_number:
-            return account
-    raise HTTPException(
-        status_code=404,
-        detail="Account not found"
-    )
+
+@router.get("/{account_number}", response_model=BankAccountResponse)
+def get_account(account_number: str) -> BankAccount:
+    return _require(account_number)
+
 
 # Create
-@router.post("/")
-def create_account(account: BankAccountCreate):
-    new_account = {
-        "account_number": str(1000 + len(accounts) + 1),
-        "account_holder_name": account.account_holder_name,
-        "account_type": account.account_type,
-        "balance": account.balance,
-        "currency": account.currency,
-        "date_opened": "2026-08-25",
-        "status": "active"
-    }
+@router.post("/", response_model=BankAccountResponse, status_code=201)
+def create_account(account: BankAccountCreate) -> BankAccount:
+    """Open an account.
 
-    accounts.append(new_account)
+    The account number comes from the request body, as BankingApp.json specifies.
+    It used to be generated as `str(1000 + len(accounts) + 1)`, which reuses a
+    number as soon as anything is deleted; the primary key now refuses a
+    duplicate outright and `store.add()` reports it as a 409.
+    """
+    from datetime import date
 
-    return new_account
+    return store.add(
+        BankAccount(
+            **account.model_dump(exclude={"date_opened"}),
+            # Optional on the way in, always set once stored.
+            date_opened=account.date_opened or date.today(),
+        )
+    )
+
 
 # Update
-@router.patch("/{account_number}")
-def update_account(account_number: str, update: BankAccountUpdate):
-    for account in accounts:
-        if account["account_number"] == account_number:
-            account["status"] = update.status
-            return account
-    raise HTTPException(
-        status_code=404,
-        detail="Account not found"
-    )
+@router.patch("/{account_number}", response_model=BankAccountResponse)
+def update_account(account_number: str, update: BankAccountUpdate) -> BankAccount:
+    with store.transaction():
+        account = _require(account_number)
+        return store.put(account.model_copy(update={"status": update.status}))
+
 
 # Delete
 @router.delete("/{account_number}")
-def delete_account(account_number: str):
-    for account in accounts:
-        if account["account_number"] == account_number:
-            accounts.remove(account)
-            return {"message": f"Account {account_number} deleted"}
-    raise HTTPException(
-        status_code=404,
-        detail="Account not found"
-    )
+def delete_account(account_number: str) -> dict[str, str]:
+    """Delete an account that has no ledger history.
 
-
-
+    Once money has moved, `store.remove()` refuses — deleting the account would
+    orphan its entries, and an auditable ledger is the point. Close it with
+    `PATCH {"status": "closed"}` instead.
+    """
+    if not store.remove(account_number):
+        raise AccountNotFound(f"No account with number {account_number!r}.")
+    return {"message": f"Account {account_number} deleted"}

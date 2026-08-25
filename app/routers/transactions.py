@@ -10,8 +10,8 @@ Endpoints:
 
 from fastapi import APIRouter, HTTPException
 
-from app import ledger, store
-from app.models import TransactionType
+from app.core import store
+from app.schemas.models import TransactionType
 from app.schemas.transaction_schema import MoneyMovement
 
 
