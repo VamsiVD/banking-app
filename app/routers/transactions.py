@@ -12,10 +12,7 @@ router = APIRouter(tags=["transactions"])
     response_model=Transaction,
     summary="Deposit funds into an account",
 )
-def deposit(
-    account_number: str,
-    movement: MoneyMovement,
-) -> Transaction:
+def deposit(account_number: str, movement: MoneyMovement) -> Transaction:
     return transaction_service.deposit(account_number, movement)
 
 
@@ -24,8 +21,5 @@ def deposit(
     response_model=Transaction,
     summary="Withdraw funds from an account",
 )
-def withdraw(
-    account_number: str,
-    movement: MoneyMovement,
-) -> Transaction:
+def withdraw(account_number: str, movement: MoneyMovement) -> Transaction:
     return transaction_service.withdraw(account_number, movement)

@@ -1,6 +1,6 @@
 """User records, backed by PostgreSQL.
 
-Same class, same two methods, same return type as the dict version — callers are
+Same class, same two methods, same return type as the dict version; callers are
 unchanged. Both methods hand back a plain `dict`, not an ORM row, because
 `auth_service` reads `user["hashed_password"]` and `routers/auth.py` reads
 `user["id"]`; returning rows would break both for no gain.
@@ -15,6 +15,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.core.store import transaction
 from app.db import current_session
+from app.errors import EmailAlreadyRegistered
 from app.tables import UserRow
 
 
@@ -42,15 +43,11 @@ class UserRepository:
     def create(self, email: str, full_name: str, hashed_password: bytes) -> dict:
         """Insert a user.
 
-        Raises EmailAlreadyRegisteredError on a duplicate. `register_user()` checks
-        first, but two simultaneous registrations can both pass that check — the
+        Raises EmailAlreadyRegistered on a duplicate. `register_user()` checks
+        first, but two simultaneous registrations can both pass that check; the
         unique constraint is what actually decides, and translating it here means
-        the loser still gets the clean 400 that `routers/auth.py` already handles.
+        the loser still gets the clean 409 that `routers/auth.py` already handles.
         """
-        # Imported here rather than at module scope: auth_service imports this
-        # module, so a top-level import would be a cycle.
-        from app.services.auth_service import EmailAlreadyRegisteredError
-
         row = UserRow(
             # The email doubles as the id, as it always has here.
             id=email,
@@ -65,7 +62,7 @@ class UserRepository:
                 session.add(row)
                 session.flush()
         except IntegrityError as exc:
-            raise EmailAlreadyRegisteredError("email already registered") from exc
+            raise EmailAlreadyRegistered("email already registered") from exc
         return _to_dict(row)
 
 

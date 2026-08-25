@@ -60,6 +60,16 @@ class AccountHasHistory(AppError):
     code = "account_has_history"
 
 
+class EmailAlreadyRegistered(AppError):
+    status_code = 409
+    code = "email_already_registered"
+
+
+class InvalidCredentials(AppError):
+    status_code = 401
+    code = "invalid_credentials"
+
+
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:

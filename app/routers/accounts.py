@@ -1,25 +1,21 @@
 """Account profiles — create, fetch, list, change status, delete.
 
-Reads and writes the shared store, so these endpoints and
-`/accounts/{n}/deposit` now see the same accounts. They used to disagree: this
-file kept its own list of five dicts with float balances, so `GET /accounts/1001`
-answered 1500.0 while a deposit against the same account answered 1510.00.
-
-The demo accounts moved to `scripts/seed.py`. Run it once after migrating:
-
-    python -m scripts.seed
-
-Request and response shapes come from `app.schemas.account_schema`, which mirrors
-BankingApp.json — including `Decimal` balances, because floats lose cents.
+Reads and writes `app.core.store`, the same store every other slice uses. It
+used to keep its own private list of dicts with a weaker ad-hoc schema
+(float balance, raw string status), which meant an account created here was
+invisible to deposits, withdrawals, and transfers (they all read `store` and
+found nothing), and let a client PATCH in a status that was not a real
+AccountStatus value.
 """
+
+from datetime import date
 
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
 from app.core import store
 from app.errors import AccountNotFound
-from app.schemas.account_schema import BankAccountCreate, BankAccountResponse
-from app.schemas.account_schema import AccountStatus, BankAccount
+from app.schemas.account_schema import AccountStatus, BankAccount, BankAccountCreate
 
 router = APIRouter(prefix="/accounts", tags=["Bank Profile"])
 
@@ -40,39 +36,36 @@ def _require(account_number: str) -> BankAccount:
 
 
 # Read
-@router.get("/", response_model=list[BankAccountResponse])
+@router.get("/", response_model=list[BankAccount])
 def return_all_accounts() -> list[BankAccount]:
     return store.list_all()
 
 
-@router.get("/{account_number}", response_model=BankAccountResponse)
+@router.get("/{account_number}", response_model=BankAccount)
 def get_account(account_number: str) -> BankAccount:
     return _require(account_number)
 
 
 # Create
-@router.post("/", response_model=BankAccountResponse, status_code=201)
+@router.post("/", response_model=BankAccount, status_code=201)
 def create_account(account: BankAccountCreate) -> BankAccount:
     """Open an account.
 
-    The account number comes from the request body, as BankingApp.json specifies.
-    It used to be generated as `str(1000 + len(accounts) + 1)`, which reuses a
-    number as soon as anything is deleted; the primary key now refuses a
-    duplicate outright and `store.add()` reports it as a 409.
+    The account number comes from the request body, as BankingApp.json
+    specifies. It used to be generated as `str(1000 + len(accounts) + 1)`,
+    which reuses a number as soon as anything is deleted; the primary key now
+    refuses a duplicate outright and `store.add()` reports it as a 409.
     """
-    from datetime import date
-
     return store.add(
         BankAccount(
             **account.model_dump(exclude={"date_opened"}),
-            # Optional on the way in, always set once stored.
             date_opened=account.date_opened or date.today(),
         )
     )
 
 
 # Update
-@router.patch("/{account_number}", response_model=BankAccountResponse)
+@router.patch("/{account_number}", response_model=BankAccount)
 def update_account(account_number: str, update: BankAccountUpdate) -> BankAccount:
     with store.transaction():
         account = _require(account_number)
@@ -84,7 +77,7 @@ def update_account(account_number: str, update: BankAccountUpdate) -> BankAccoun
 def delete_account(account_number: str) -> dict[str, str]:
     """Delete an account that has no ledger history.
 
-    Once money has moved, `store.remove()` refuses — deleting the account would
+    Once money has moved, `store.remove()` refuses; deleting the account would
     orphan its entries, and an auditable ledger is the point. Close it with
     `PATCH {"status": "closed"}` instead.
     """
