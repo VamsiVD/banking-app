@@ -18,7 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from app import db
 from app.core import store
 from app.errors import DuplicateAccount
-from app.schemas.models import BankAccount
+from app.schemas.account_schema import BankAccount
 
 
 def an_account(number="ACC-1", balance="100.00", status="active", currency="USD"):

@@ -25,7 +25,7 @@ from app import db
 from app.core import store
 from app.config import get_settings
 from app.main import app
-from app.schemas.models import BankAccount
+from app.schemas.account_schema import BankAccount
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -8,12 +8,9 @@ not log in today.
 import pytest
 
 from app import db
+from app.errors import EmailAlreadyRegistered, InvalidCredentials
 from app.repositories.user_repository import user_repository
 from app.services import auth_service
-from app.services.auth_service import (
-    EmailAlreadyRegisteredError,
-    InvalidCredentialsError,
-)
 from app.schemas.auth_schema import LoginRequest, RegisterRequest
 
 
@@ -89,8 +86,8 @@ def test_registering_the_same_email_twice_is_refused(client):
 
     r = register(client, name="Someone Else")
 
-    assert r.status_code == 400
-    assert "already registered" in r.json()["detail"]
+    assert r.status_code == 409
+    assert "already registered" in r.json()["error"]["message"]
 
 
 def test_the_unique_constraint_catches_what_the_python_check_cannot(db_session):
@@ -105,14 +102,14 @@ def test_the_unique_constraint_catches_what_the_python_check_cannot(db_session):
     )
     auth_service.register_user(payload)
 
-    with pytest.raises(EmailAlreadyRegisteredError):
+    with pytest.raises(EmailAlreadyRegistered):
         user_repository.create("race@example.com", "Second", b"$2b$12$fakehashvalue")
 
 
 def test_authenticate_user_raises_for_a_bad_password(client):
     register(client, email="ana@example.com")
 
-    with pytest.raises(InvalidCredentialsError):
+    with pytest.raises(InvalidCredentials):
         auth_service.authenticate_user(
             LoginRequest(email="ana@example.com", password="wrong-password")
         )
