@@ -21,7 +21,6 @@ app = FastAPI(
 
 install_error_handlers(app)
 
-app.include_router(BankProfile.router)
 app.include_router(accounts.router)
 app.include_router(queries.router)
 app.include_router(transactions.router)
