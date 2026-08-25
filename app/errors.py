@@ -49,6 +49,17 @@ class CurrencyMismatch(AppError):
     code = "currency_mismatch"
 
 
+class AccountHasHistory(AppError):
+    """Deleting an account that has ledger entries.
+
+    A ledger is only auditable if its entries outlive nothing. Closing an account
+    is a status change; deleting one that has moved money is not offered.
+    """
+
+    status_code = 409
+    code = "account_has_history"
+
+
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:

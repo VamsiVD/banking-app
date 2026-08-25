@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "name": "AuthSchema",
+  "$defs": {
+    "RegisterRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "password",
+        "full_name"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 255,
+          "description": "user email, used as login id"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "plain text password from client, hashed before storage"
+        },
+        "full_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "user's full name"
+        }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 255,
+          "description": "user email, used as login id"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "plain text password from client, checked against stored hash"
+        }
+      }
+    },
+    "TokenResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "access_token",
+        "token_type"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "JWT access token"
+        },
+        "token_type": {
+          "type": "string",
+          "enum": [
+            "bearer"
+          ],
+          "description": "type of token returned"
+        }
+      }
+    },
+    "UserProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "email",
+        "full_name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "unique user id"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "user email"
+        },
+        "full_name": {
+          "type": "string",
+          "description": "user's full name"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "account creation timestamp"
+        }
+      }
+    }
+  }
+}

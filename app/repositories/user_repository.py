@@ -1,0 +1,73 @@
+"""User records, backed by PostgreSQL.
+
+Same class, same two methods, same return type as the dict version — callers are
+unchanged. Both methods hand back a plain `dict`, not an ORM row, because
+`auth_service` reads `user["hashed_password"]` and `routers/auth.py` reads
+`user["id"]`; returning rows would break both for no gain.
+
+Registered users now survive a restart, which is the whole point.
+"""
+
+from datetime import datetime, timezone
+
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+
+from app.core.store import transaction
+from app.db import current_session
+from app.tables import UserRow
+
+
+def _to_dict(row: UserRow) -> dict:
+    return {
+        "id": row.id,
+        "email": row.email,
+        "full_name": row.full_name,
+        "hashed_password": row.hashed_password,
+        "created_at": row.created_at,
+    }
+
+
+class UserRepository:
+    """Save and fetch user records. The only file that knows users are in SQL."""
+
+    def get_by_email(self, email: str) -> dict | None:
+        row = current_session().scalars(
+            select(UserRow)
+            .where(UserRow.email == email)
+            .execution_options(populate_existing=True)
+        ).one_or_none()
+        return _to_dict(row) if row is not None else None
+
+    def create(self, email: str, full_name: str, hashed_password: bytes) -> dict:
+        """Insert a user.
+
+        Raises EmailAlreadyRegisteredError on a duplicate. `register_user()` checks
+        first, but two simultaneous registrations can both pass that check — the
+        unique constraint is what actually decides, and translating it here means
+        the loser still gets the clean 400 that `routers/auth.py` already handles.
+        """
+        # Imported here rather than at module scope: auth_service imports this
+        # module, so a top-level import would be a cycle.
+        from app.services.auth_service import EmailAlreadyRegisteredError
+
+        row = UserRow(
+            # The email doubles as the id, as it always has here.
+            id=email,
+            email=email,
+            full_name=full_name,
+            hashed_password=hashed_password,
+            created_at=datetime.now(timezone.utc),
+        )
+        try:
+            with transaction():
+                session = current_session()
+                session.add(row)
+                session.flush()
+        except IntegrityError as exc:
+            raise EmailAlreadyRegisteredError("email already registered") from exc
+        return _to_dict(row)
+
+
+# importer gets this same instance
+user_repository = UserRepository()
