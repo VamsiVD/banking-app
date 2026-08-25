@@ -19,6 +19,7 @@ from app.routers import (
     accounts,
     auth,
     queries,
+    auth,
     statements,
     transactions,
     transfers,
