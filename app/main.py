@@ -15,7 +15,18 @@ load_dotenv()
 from fastapi import FastAPI
 
 from app.errors import install_error_handlers
+<<<<<<< Updated upstream
 from app.routers import accounts, auth, queries, statements, transactions, transfers, BankProfile
+=======
+from app.routers import (
+    accounts,
+    queries,
+    statements,
+    transactions,
+    transfers,
+    BankProfile,
+)
+>>>>>>> Stashed changes
 
 app = FastAPI(
     title="Banking API",
