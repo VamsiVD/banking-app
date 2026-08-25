@@ -21,6 +21,7 @@ from app.routers import accounts, auth, queries, statements, transactions, trans
 from app.routers import (
     accounts,
     queries,
+    auth,
     statements,
     transactions,
     transfers,
