@@ -17,7 +17,7 @@ from decimal import Decimal
 
 from app import db
 from app.core import store
-from app.schemas.models import BankAccount
+from app.schemas.account_schema import BankAccount
 
 DEMO_ACCOUNTS = [
     ("1001", "Sana Smith", "savings", "1500.00", "2026-08-25", "active"),

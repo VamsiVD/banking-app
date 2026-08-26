@@ -1,31 +1,15 @@
 """Tests for the transactions slice: deposit, withdraw, transfer.
 
-The deposit and withdraw cases are skipped. Those two endpoints in
-`app/routers/transactions.py` currently echo the request body back without
-touching the store — no balance change, no ledger entry — so every assertion
-here about money moving fails on behaviour that is not there yet.
-
-They are kept rather than deleted because they describe what the endpoints are
-meant to do, and the store underneath them works: `store.transaction()`,
-`store.get()` under a row lock, `store.put()` and `store.record()` are all
-exercised by the transfer cases below and by test_db_foundation.py. When that
-slice is wired back up, delete the skip marker at the top of this file and they
-should pass.
-
-The transfer cases are NOT skipped and do run.
+Deposit and withdraw answer 200 with the ledger entry itself — the `Transaction`,
+not a wrapper — because `routers/transactions.py` declares
+`response_model=Transaction` and delegates to `services/transaction_service.py`.
+Refusals come back in the shared `{"error": {"code", "message"}}` envelope like
+everything else, since that service raises the `app/errors.py` classes.
 """
 
 from decimal import Decimal
 
-import pytest
-
 from app.core import store
-
-# Remove this, and the `pytestmark` lines below, once deposit/withdraw write to
-# the store again.
-_STUBBED = pytest.mark.skip(
-    reason="deposit/withdraw are stubs: they echo the request and never touch the store"
-)
 
 
 def err(response) -> str:
@@ -33,37 +17,22 @@ def err(response) -> str:
     return response.json()["error"]["code"]
 
 
-def detail(response) -> str:
-    """The message out of FastAPI's own error body.
-
-    routers/transactions.py is owned by another teammate and raises HTTPException
-    directly, so its failures come back as {"detail": ...} rather than the
-    {"error": {"code", "message"}} envelope the rest of the API uses. Asserted as
-    it actually behaves; converging the two is that owner's call, not this
-    branch's.
-    """
-    return response.json()["detail"]
-
-
 # --------------------------------------------------------------------------
 # deposit
 # --------------------------------------------------------------------------
 
 
-@_STUBBED
 def test_deposit_credits_the_account(client, make_account):
     make_account(balance="100.00")
     r = client.post("/accounts/ACC-1/deposit", json={"amount": "40.50"})
 
     assert r.status_code == 200
     body = r.json()
-    assert body["transaction"]["type"] == "deposit"
-    assert body["transaction"]["balance_after"] == "140.50"
-    assert body["account"]["balance"] == "140.50"
+    assert body["type"] == "deposit"
+    assert body["balance_after"] == "140.50"
     assert store.get("ACC-1").balance == Decimal("140.50")
 
 
-@_STUBBED
 def test_deposit_writes_one_ledger_entry(client, make_account):
     make_account()
     client.post("/accounts/ACC-1/deposit", json={"amount": "10.00", "description": "payday"})
@@ -74,24 +43,21 @@ def test_deposit_writes_one_ledger_entry(client, make_account):
     assert entries[0].counterparty is None
 
 
-@_STUBBED
 def test_deposit_to_unknown_account_is_404(client):
     r = client.post("/accounts/NOPE/deposit", json={"amount": "10.00"})
     assert r.status_code == 404
-    assert detail(r) == "Account not found"
+    assert err(r) == "account_not_found"
 
 
-@_STUBBED
 def test_deposit_to_frozen_account_is_rejected(client, make_account):
     make_account(status="frozen")
     r = client.post("/accounts/ACC-1/deposit", json={"amount": "10.00"})
 
     assert r.status_code == 409
-    assert detail(r) == "Account is not active"
+    assert err(r) == "account_not_active"
     assert store.get("ACC-1").balance == Decimal("100.00")
 
 
-@_STUBBED
 def test_non_positive_amounts_are_rejected(client, make_account):
     make_account()
     for amount in ("0", "-5.00"):
@@ -101,7 +67,6 @@ def test_non_positive_amounts_are_rejected(client, make_account):
     assert store.get("ACC-1").balance == Decimal("100.00")
 
 
-@_STUBBED
 def test_unknown_field_is_rejected(client, make_account):
     make_account()
     r = client.post("/accounts/ACC-1/deposit", json={"amount": "10.00", "currency": "EUR"})
@@ -114,17 +79,15 @@ def test_unknown_field_is_rejected(client, make_account):
 # --------------------------------------------------------------------------
 
 
-@_STUBBED
 def test_withdraw_debits_the_account(client, make_account):
     make_account(balance="100.00")
     r = client.post("/accounts/ACC-1/withdraw", json={"amount": "30.00"})
 
     assert r.status_code == 200
-    assert r.json()["transaction"]["type"] == "withdrawal"
+    assert r.json()["type"] == "withdrawal"
     assert store.get("ACC-1").balance == Decimal("70.00")
 
 
-@_STUBBED
 def test_withdraw_may_empty_the_account_exactly(client, make_account):
     make_account(balance="100.00")
     r = client.post("/accounts/ACC-1/withdraw", json={"amount": "100.00"})
@@ -133,13 +96,12 @@ def test_withdraw_may_empty_the_account_exactly(client, make_account):
     assert store.get("ACC-1").balance == Decimal("0.00")
 
 
-@_STUBBED
 def test_overdraft_is_refused_and_changes_nothing(client, make_account):
     make_account(balance="50.00")
     r = client.post("/accounts/ACC-1/withdraw", json={"amount": "50.01"})
 
     assert r.status_code == 409
-    assert detail(r) == "Insufficient funds"
+    assert err(r) == "insufficient_funds"
     assert store.get("ACC-1").balance == Decimal("50.00")
     assert store.for_account("ACC-1") == []
 
@@ -262,18 +224,15 @@ def test_transfer_into_a_closed_account_is_refused(client, make_account):
 # --------------------------------------------------------------------------
 
 
-@_STUBBED
 def test_amounts_are_json_strings_not_floats(client, make_account):
     """Money crosses the wire as a string; a JSON number would be a float."""
     make_account(balance="100.00")
     body = client.post("/accounts/ACC-1/deposit", json={"amount": "0.10"}).json()
 
-    assert body["transaction"]["amount"] == "0.10"
-    assert isinstance(body["transaction"]["balance_after"], str)
-    assert isinstance(body["account"]["balance"], str)
+    assert body["amount"] == "0.10"
+    assert isinstance(body["balance_after"], str)
 
 
-@_STUBBED
 def test_repeated_small_deposits_do_not_drift(client, make_account):
     """The reason money is Decimal: 0.1 + 0.2 != 0.3 in float."""
     make_account(balance="0.00")
@@ -283,7 +242,6 @@ def test_repeated_small_deposits_do_not_drift(client, make_account):
     assert store.get("ACC-1").balance == Decimal("1.00")
 
 
-@_STUBBED
 def test_concurrent_withdrawals_cannot_overdraw(client, make_account):
     """The row lock's reason for existing.
 
