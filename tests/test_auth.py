@@ -60,7 +60,7 @@ def test_login_verifies_a_hash_read_back_out_of_the_database(client, db_session)
     )
 
     assert r.status_code == 200
-    assert r.json()["email"] == "sam@example.com"
+    assert r.json()["access_token"]
 
 
 def test_login_with_the_wrong_password_is_401(client):

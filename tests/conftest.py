@@ -96,6 +96,18 @@ def client() -> TestClient:
 
 
 @pytest.fixture
+def auth_headers(client: TestClient) -> dict[str, str]:
+    """Log the default test owner in and hand back a ready-to-use auth header."""
+    ensure_owner()
+    r = client.post(
+        "/auth/login",
+        json={"email": DEFAULT_OWNER_ID, "password": "password123"},
+    )
+    token = r.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
 def make_account():
     def _make(
         account_number: str = "ACC-1",
