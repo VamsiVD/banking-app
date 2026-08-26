@@ -13,10 +13,19 @@ is easier to read than trusting the rollback.
 """
 
 from app.core import store, transfer_rules
-from app.errors import AccountNotFound
+from app.errors import AccountNotFound, TransferNotFound
 from app.schemas.transaction_schema import TransactionType
-from app.repositories import account_repository
-from app.schemas.transfer_schema import TransferRequest, TransferResult
+from app.repositories import account_repository, transaction_repository
+from app.schemas.transfer_schema import (
+    TransferPage,
+    TransferRequest,
+    TransferResult,
+    TransferSummary,
+)
+
+# A client that asks for everything gets a page instead. Without a ceiling,
+# `?limit=1000000` is a way to make the server do arbitrary work.
+MAX_LIMIT = 100
 
 
 def _active_account(account_number: str, account):
@@ -57,7 +66,7 @@ def execute_transfer(body: TransferRequest) -> TransferResult:
             destination, destination.balance + body.amount
         )
 
-        debit = store.record(
+        debit = transaction_repository.create(
             source.account_number,
             TransactionType.transfer_out,
             body.amount,
@@ -66,7 +75,7 @@ def execute_transfer(body: TransferRequest) -> TransferResult:
             counterparty=destination.account_number,
             description=body.description,
         )
-        credit = store.record(
+        credit = transaction_repository.create(
             destination.account_number,
             TransactionType.transfer_in,
             body.amount,
@@ -76,3 +85,34 @@ def execute_transfer(body: TransferRequest) -> TransferResult:
             description=body.description,
         )
         return TransferResult(debit=debit, credit=credit)
+
+
+def list_transfers(
+    account_number: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> TransferPage:
+    """A page of transfers, newest first, optionally for one account.
+
+    `total` is counted separately from the page so a client can tell "20 results"
+    from "20 of 400" — which is the whole reason for the envelope.
+    """
+    limit = max(1, min(limit, MAX_LIMIT))
+    offset = max(0, offset)
+
+    items = transaction_repository.list_transfers(account_number, limit, offset)
+    total = transaction_repository.count_transfers(account_number)
+    return TransferPage(items=items, total=total, limit=limit, offset=offset)
+
+
+def get_transfer(transfer_id: str) -> TransferSummary:
+    """One transfer, or raise.
+
+    An id that belongs to a deposit or a withdrawal is a 404 here, not a partial
+    answer: those are not transfers, and the repository's `type` filter is what
+    decides it.
+    """
+    transfer = transaction_repository.get_transfer(transfer_id)
+    if transfer is None:
+        raise TransferNotFound(f"No transfer with id {transfer_id!r}.")
+    return transfer
