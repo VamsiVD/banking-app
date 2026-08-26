@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status
 
 from app.core import security
+from app.services import auth_service
 from app.api_schemas.auth_schema import (
     LoginRequest,
     LoginResponse,
