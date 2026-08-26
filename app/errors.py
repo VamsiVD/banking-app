@@ -60,6 +60,18 @@ class AccountHasHistory(AppError):
     code = "account_has_history"
 
 
+class TransferNotFound(AppError):
+    """No transfer with that id.
+
+    Also raised when the id belongs to a real ledger entry that is not a
+    transfer — a deposit is not a transfer, and answering with one would be a
+    stranger result than a 404.
+    """
+
+    status_code = 404
+    code = "transfer_not_found"
+
+
 class EmailAlreadyRegistered(AppError):
     status_code = 409
     code = "email_already_registered"
