@@ -169,15 +169,52 @@ name gets it applied twice, and autogenerate then reports a diff forever.
 Commit the migration in the same PR as the table change, and say so in the
 group chat so everyone knows to upgrade.
 
+**When two people add a migration at once**, both branch off the same revision
+and you end up with two heads. `alembic upgrade head` then refuses:
+
+```
+Multiple head revisions are present for given argument 'head'; please specify
+a specific target revision, '<branchname>@head' to narrow to a specific head,
+or 'heads' for all heads
+```
+
+Nothing is broken; the history just forked. Rejoin it:
+
+```bash
+alembic heads                                # shows the two
+alembic merge heads -m "merge <a> and <b>"   # writes a merge revision
+alembic upgrade head                         # runs both, then the merge
+```
+
+The merge revision contains no schema changes of its own — its only job is to
+have both heads as parents. Commit it like any other migration.
+
 ## Working together
 
-Branch off `api_endpoint_test`, one branch per slice, PR back into
-`VamsiVD/banking-app`:
+`feat/db-foundation` is the integration branch. Branch off it, one branch per
+slice, and PR back into it when your slice is done:
 
 ```bash
 git fetch upstream
-git checkout -b feat/<slice> upstream/api_endpoint_test
+git checkout -b feat/<slice> upstream/feat/db-foundation
 ```
+
+**Do not branch off `api_endpoint_test`.** It predates the database — no
+`app/db.py`, no `app/tables.py`, no `alembic/`, no `docker-compose.yml` — so a
+slice built on it cannot be merged back without being rewritten.
+
+Once people are branched off a shared moving branch, a few things start to
+matter that did not before:
+
+- **Never force-push `feat/db-foundation`.** Everyone is branched off it, and
+  rewriting its history breaks all of them at once. Corrections go on top as
+  new commits.
+- **Merge it into your slice regularly**, not just at the end. A week of drift
+  is a bad afternoon.
+- **Run `alembic upgrade head` after every pull or merge**, not only after
+  cloning. A teammate's new table is a migration you have not applied yet, and
+  the symptom is a confusing "column does not exist" rather than anything that
+  mentions migrations.
 
 Each person owns one file under `app/routers/`. Shared files (`app/main.py`,
 `app/errors.py`, `app/db.py`, `app/tables.py`, `app/config.py`,
