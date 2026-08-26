@@ -50,17 +50,16 @@ def get_account(account_number: str) -> BankAccount:
 # Create
 @router.post("/", response_model=BankAccount, status_code=201)
 def create_account(account: BankAccountCreate) -> BankAccount:
-    """Open an account.
+    """Open an account with an automatically generated account number."""
 
-    The account number comes from the request body, as BankingApp.json
-    specifies. It used to be generated as `str(1000 + len(accounts) + 1)`,
-    which reuses a number as soon as anything is deleted; the primary key now
-    refuses a duplicate outright and `store.add()` reports it as a 409.
-    """
     if user_repository.get_by_email(account.owner_id) is None:
         raise UserNotFound(f"No user with id {account.owner_id!r}.")
+
+    account_number = store.get_next_account_number()
+
     return store.add(
         BankAccount(
+            account_number=account_number,
             **account.model_dump(exclude={"date_opened"}),
             date_opened=account.date_opened or date.today(),
         )

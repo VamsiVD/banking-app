@@ -14,11 +14,15 @@ def get_account_by_id(account_number: str) -> BankAccount:
     return account_repository.get(account_number)
 
 def create_account(data: BankAccountCreate) -> BankAccount:
-    if account_repository.exists(data.account_number):
-        raise ValueError("Account already exists")
+    max_account_number = account_repository.get_max_account_number()
+
+    if max_account_number is None:
+        account_number = "100"
+    else:
+        account_number = str(int(max_account_number) + 1)
 
     account = BankAccount(
-        account_number=data.account_number,
+        account_number=account_number,
         account_holder_name=data.account_holder_name,
         account_type=data.account_type,
         status=data.status,
