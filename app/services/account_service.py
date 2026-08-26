@@ -25,6 +25,7 @@ def create_account(data: BankAccountCreate) -> BankAccount:
         balance=data.balance,
         currency=data.currency,
         date_opened=data.date_opened or date.today(),
+        owner_id=data.owner_id,
     )
 
     return account_repository.create(account)

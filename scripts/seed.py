@@ -16,7 +16,9 @@ from datetime import date
 from decimal import Decimal
 
 from app import db
+from app.core import security
 from app.core import store
+from app.repositories.user_repository import user_repository
 from app.schemas.account_schema import BankAccount
 
 DEMO_ACCOUNTS = [
@@ -28,11 +30,25 @@ DEMO_ACCOUNTS = [
 ]
 
 
+def _demo_owner_id(holder: str) -> str:
+    """Each demo account gets its own demo user, derived from the holder name."""
+    return holder.lower().replace(" ", ".") + "@demo.bank"
+
+
+def _ensure_demo_owner(holder: str) -> str:
+    owner_id = _demo_owner_id(holder)
+    if user_repository.get_by_email(owner_id) is None:
+        user_repository.create(owner_id, holder, security.hash_password("changeme123"))
+    return owner_id
+
+
 def seed() -> tuple[int, int]:
-    """Insert any missing demo accounts. Returns (created, skipped)."""
+    """Insert any missing demo accounts (and their owning demo users). Returns (created, skipped)."""
     created = skipped = 0
 
     for number, holder, kind, balance, opened, status in DEMO_ACCOUNTS:
+        owner_id = _ensure_demo_owner(holder)
+
         if store.exists(number):
             print(f"  = {number}  {holder:14} already present, left alone")
             skipped += 1
@@ -49,6 +65,7 @@ def seed() -> tuple[int, int]:
                 balance=Decimal(balance),
                 currency="USD",
                 date_opened=date.fromisoformat(opened),
+                owner_id=owner_id,
             )
         )
         print(f"  + {number}  {holder:14} {balance:>10} USD  {status}")

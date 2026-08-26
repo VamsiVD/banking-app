@@ -18,6 +18,9 @@ Money = Annotated[Decimal, Field(ge=0, max_digits=18, decimal_places=2)]
 AccountNumber = Annotated[str, Field(min_length=1, max_length=34)]
 Currency = Annotated[str, Field(min_length=3, max_length=3, pattern=r"^[A-Z]{3}$")]
 
+# Matches UserRow.id: the owning user's email, which doubles as their id.
+UserId = Annotated[str, Field(min_length=1, max_length=255)]
+
 # Amounts on a movement are strictly positive; direction is carried by type,
 # never by a negative number. A "deposit of -50" should be impossible to express.
 PositiveMoney = Annotated[Decimal, Field(gt=0, max_digits=18, decimal_places=2)]

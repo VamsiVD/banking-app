@@ -65,6 +65,11 @@ class EmailAlreadyRegistered(AppError):
     code = "email_already_registered"
 
 
+class UserNotFound(AppError):
+    status_code = 404
+    code = "user_not_found"
+
+
 class InvalidCredentials(AppError):
     status_code = 401
     code = "invalid_credentials"

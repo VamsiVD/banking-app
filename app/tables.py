@@ -86,12 +86,18 @@ class AccountRow(Base):
     balance: Mapped[Decimal] = mapped_column(Numeric(18, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="USD")
     date_opened: Mapped[date] = mapped_column(Date, nullable=False)
+    # Who owns the account. NOT NULL: a web account with no bank account is
+    # normal, a bank account with no owner is not.
+    owner_id: Mapped[str] = mapped_column(
+        String(255), ForeignKey("users.id"), nullable=False
+    )
 
     __table_args__ = (
         # The API refuses to overdraw an account. So does the database now — this
         # holds even against a stray UPDATE from a psql prompt.
         CheckConstraint("balance >= 0", name="balance_non_negative"),
         CheckConstraint("currency ~ '^[A-Z]{3}$'", name="currency_is_iso_4217"),
+        Index("ix_accounts_owner_id", "owner_id"),
     )
 
 
@@ -138,9 +144,7 @@ class TransactionRow(Base):
 class UserRow(Base):
     """A registered user, for the auth slice.
 
-    Not linked to accounts yet — nothing in the API says who owns an account. When
-    that lands it is a foreign key from `accounts` to here, which is a migration
-    rather than a rewrite.
+    Linked to `accounts` via `AccountRow.owner_id`, a foreign key back to here.
     """
 
     __tablename__ = "users"

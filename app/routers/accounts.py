@@ -14,7 +14,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict
 
 from app.core import store
-from app.errors import AccountNotFound
+from app.errors import AccountNotFound, UserNotFound
+from app.repositories.user_repository import user_repository
 from app.schemas.account_schema import AccountStatus, BankAccount, BankAccountCreate
 
 router = APIRouter(prefix="/accounts", tags=["Bank Profile"])
@@ -56,6 +57,8 @@ def create_account(account: BankAccountCreate) -> BankAccount:
     which reuses a number as soon as anything is deleted; the primary key now
     refuses a duplicate outright and `store.add()` reports it as a 409.
     """
+    if user_repository.get_by_email(account.owner_id) is None:
+        raise UserNotFound(f"No user with id {account.owner_id!r}.")
     return store.add(
         BankAccount(
             **account.model_dump(exclude={"date_opened"}),

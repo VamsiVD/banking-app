@@ -11,7 +11,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.primitives import AccountNumber, Currency, Money
+from app.schemas.primitives import AccountNumber, Currency, Money, UserId
 
 
 class AccountType(str, Enum):
@@ -40,6 +40,7 @@ class BankAccountCreate(BaseModel):
     balance: Money = Decimal("0.00")
     currency: Currency = "USD"
     date_opened: date | None = None
+    owner_id: UserId
 
 
 class BankAccount(BankAccountCreate):

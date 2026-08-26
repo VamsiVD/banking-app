@@ -24,8 +24,20 @@ from fastapi.testclient import TestClient
 from app import db
 from app.core import store
 from app.config import get_settings
+from app.core import security
 from app.main import app
+from app.repositories.user_repository import user_repository
 from app.schemas.account_schema import BankAccount
+
+# Accounts carry a foreign key to `users`. This is the owner every account
+# fixture/helper defaults to; ensure_owner() creates it lazily since
+# clean_state truncates users between tests.
+DEFAULT_OWNER_ID = "owner@example.com"
+
+
+def ensure_owner(owner_id: str = DEFAULT_OWNER_ID) -> None:
+    if user_repository.get_by_email(owner_id) is None:
+        user_repository.create(owner_id, "Test Owner", security.hash_password("password123"))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -98,7 +110,9 @@ def make_account():
         balance: str = "100.00",
         currency: str = "USD",
         status: str = "active",
+        owner_id: str = DEFAULT_OWNER_ID,
     ) -> BankAccount:
+        ensure_owner(owner_id)
         return store.add(
             BankAccount(
                 account_number=account_number,
@@ -108,6 +122,7 @@ def make_account():
                 balance=Decimal(balance),
                 currency=currency,
                 date_opened=date.today(),
+                owner_id=owner_id,
             )
         )
 

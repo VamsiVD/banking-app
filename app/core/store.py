@@ -79,6 +79,7 @@ def _to_account(row: AccountRow) -> BankAccount:
         balance=row.balance,
         currency=row.currency,
         date_opened=row.date_opened,
+        owner_id=row.owner_id,
     )
 
 

@@ -13,13 +13,15 @@ import pytest
 from app import db
 from app.core import store
 
+from conftest import DEFAULT_OWNER_ID, ensure_owner
+
 
 def err(response) -> str:
     return response.json()["error"]["code"]
 
 
 def new_account(number="ACC-9", holder="New Holder", kind="checking",
-                balance="250.00", status="active", **extra):
+                balance="250.00", status="active", owner_id=DEFAULT_OWNER_ID, **extra):
     return {
         "account_number": number,
         "account_holder_name": holder,
@@ -27,6 +29,7 @@ def new_account(number="ACC-9", holder="New Holder", kind="checking",
         "status": status,
         "balance": balance,
         "currency": "USD",
+        "owner_id": owner_id,
         **extra,
     }
 
@@ -57,6 +60,7 @@ def test_accounts_and_the_store_agree(client, make_account, db_session):
 
 def test_an_account_created_through_the_api_is_visible_to_the_store(client, db_session):
     """Creating and then using an account used to be impossible across two stores."""
+    ensure_owner()
     assert client.post("/accounts/", json=new_account("ACC-9", balance="0.00")).status_code == 201
 
     with db.session_scope():
@@ -110,6 +114,7 @@ def test_fetching_an_unknown_account_is_404(client):
 
 
 def test_create_persists_the_account(client, db_session):
+    ensure_owner()
     r = client.post("/accounts/", json=new_account("ACC-9", balance="250.00"))
 
     assert r.status_code == 201
@@ -119,6 +124,7 @@ def test_create_persists_the_account(client, db_session):
 def test_create_honours_the_account_number_from_the_body(client):
     """It used to invent str(1000 + len(accounts) + 1), which reuses a number
     as soon as anything is deleted."""
+    ensure_owner()
     client.post("/accounts/", json=new_account("CUSTOM-42"))
 
     assert client.get("/accounts/CUSTOM-42").status_code == 200

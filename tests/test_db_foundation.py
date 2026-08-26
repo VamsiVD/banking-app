@@ -20,8 +20,12 @@ from app.core import store
 from app.errors import DuplicateAccount
 from app.schemas.account_schema import BankAccount
 
+from conftest import DEFAULT_OWNER_ID, ensure_owner
 
-def an_account(number="ACC-1", balance="100.00", status="active", currency="USD"):
+
+def an_account(number="ACC-1", balance="100.00", status="active", currency="USD",
+               owner_id=DEFAULT_OWNER_ID):
+    ensure_owner(owner_id)
     return BankAccount(
         account_number=number,
         account_holder_name="Test Holder",
@@ -30,6 +34,7 @@ def an_account(number="ACC-1", balance="100.00", status="active", currency="USD"
         balance=Decimal(balance),
         currency=currency,
         date_opened=date.today(),
+        owner_id=owner_id,
     )
 
 
@@ -128,26 +133,30 @@ def test_database_refuses_a_negative_balance(db_session):
 
 
 def test_database_refuses_an_unknown_account_type(db_session):
+    ensure_owner()
     with pytest.raises(IntegrityError):
         with store.transaction():
             db_session.execute(
                 text(
                     "INSERT INTO accounts (account_number, account_holder_name, "
-                    "account_type, status, balance, currency, date_opened) "
-                    "VALUES ('X', 'N', 'savngs', 'active', 0, 'USD', CURRENT_DATE)"
-                )
+                    "account_type, status, balance, currency, date_opened, owner_id) "
+                    "VALUES ('X', 'N', 'savngs', 'active', 0, 'USD', CURRENT_DATE, :owner)"
+                ),
+                {"owner": DEFAULT_OWNER_ID},
             )
 
 
 def test_database_refuses_a_lowercase_currency(db_session):
+    ensure_owner()
     with pytest.raises(IntegrityError):
         with store.transaction():
             db_session.execute(
                 text(
                     "INSERT INTO accounts (account_number, account_holder_name, "
-                    "account_type, status, balance, currency, date_opened) "
-                    "VALUES ('X', 'N', 'checking', 'active', 0, 'usd', CURRENT_DATE)"
-                )
+                    "account_type, status, balance, currency, date_opened, owner_id) "
+                    "VALUES ('X', 'N', 'checking', 'active', 0, 'usd', CURRENT_DATE, :owner)"
+                ),
+                {"owner": DEFAULT_OWNER_ID},
             )
 
 
