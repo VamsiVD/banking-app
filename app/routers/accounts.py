@@ -10,10 +10,11 @@ AccountStatus value.
 
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
 
 from app.core import store
+from app.core.auth_guard import get_current_user
 from app.errors import AccountNotFound, UserNotFound
 from app.repositories.user_repository import user_repository
 from app.api_schemas.account_schema import AccountStatus, BankAccount, BankAccountCreate
@@ -38,18 +39,18 @@ def _require(account_number: str) -> BankAccount:
 
 # Read
 @router.get("/", response_model=list[BankAccount])
-def return_all_accounts() -> list[BankAccount]:
+def return_all_accounts(user=Depends(get_current_user)) -> list[BankAccount]:
     return store.list_all()
 
 
 @router.get("/{account_number}", response_model=BankAccount)
-def get_account(account_number: str) -> BankAccount:
+def get_account(account_number: str, user=Depends(get_current_user)) -> BankAccount:
     return _require(account_number)
 
 
 # Create
 @router.post("/", response_model=BankAccount, status_code=201)
-def create_account(account: BankAccountCreate) -> BankAccount:
+def create_account(account: BankAccountCreate, user=Depends(get_current_user)) -> BankAccount:
     """Open an account with an automatically generated account number."""
 
     if user_repository.get_by_email(account.owner_id) is None:
@@ -68,7 +69,7 @@ def create_account(account: BankAccountCreate) -> BankAccount:
 
 # Update
 @router.patch("/{account_number}", response_model=BankAccount)
-def update_account(account_number: str, update: BankAccountUpdate) -> BankAccount:
+def update_account(account_number: str, update: BankAccountUpdate, user=Depends(get_current_user)) -> BankAccount:
     with store.transaction():
         account = _require(account_number)
         return store.put(account.model_copy(update={"status": update.status}))
@@ -76,7 +77,7 @@ def update_account(account_number: str, update: BankAccountUpdate) -> BankAccoun
 
 # Delete
 @router.delete("/{account_number}")
-def delete_account(account_number: str) -> dict[str, str]:
+def delete_account(account_number: str, user=Depends(get_current_user)) -> dict[str, str]:
     """Delete an account that has no ledger history.
 
     Once money has moved, `store.remove()` refuses; deleting the account would

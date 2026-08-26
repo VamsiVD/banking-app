@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.api_schemas.transaction_schema import MoneyMovement, Transaction
+from app.core.auth_guard import get_current_user
 from app.services import transaction_service
 
 
@@ -16,6 +17,7 @@ router = APIRouter(tags=["transactions"])
 def deposit(
     account_number: str,
     movement: MoneyMovement,
+    user=Depends(get_current_user),
 ) -> Transaction:
     return transaction_service.deposit(account_number, movement)
 
@@ -29,5 +31,6 @@ def deposit(
 def withdraw(
     account_number: str,
     movement: MoneyMovement,
+    user=Depends(get_current_user),
 ) -> Transaction:
     return transaction_service.withdraw(account_number, movement)
