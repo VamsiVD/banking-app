@@ -10,7 +10,7 @@ router = APIRouter(tags=["transactions"])
 @router.post(
     "/accounts/{account_number}/deposit",
     response_model=Transaction,
-    status_code=201,
+    status_code=200,
     summary="Deposit funds into an account",
 )
 def deposit(
@@ -23,7 +23,7 @@ def deposit(
 @router.post(
     "/accounts/{account_number}/withdraw",
     response_model=Transaction,
-    status_code=201,
+    status_code=200,
     summary="Withdraw funds from an account",
 )
 def withdraw(
