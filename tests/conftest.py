@@ -17,8 +17,6 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from alembic import command
-from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from app import db
@@ -27,7 +25,7 @@ from app.config import get_settings
 from app.core import security
 from app.main import app
 from app.repositories.user_repository import user_repository
-from app.schemas.account_schema import BankAccount
+from app.api_schemas.account_schema import BankAccount
 
 # Accounts carry a foreign key to `users`. This is the owner every account
 # fixture/helper defaults to; ensure_owner() creates it lazily since
@@ -44,10 +42,7 @@ def ensure_owner(owner_id: str = DEFAULT_OWNER_ID) -> None:
 def _database():
     """Point the engine at the test database and bring its schema up to date.
 
-    Session-scoped: migrating once per run, not once per test. Running the real
-    migrations rather than `create_all()` means every `pytest` also checks that
-    the migrations still build a schema the code can use — which is the failure
-    nobody notices until a teammate clones the repo.
+    Session-scoped: creating tables once per run, not once per test.
     """
     settings = get_settings()
     test_url = settings.TEST_DATABASE_URL
@@ -67,10 +62,7 @@ def _database():
         )
 
     db.configure(test_url)
-
-    config = Config("alembic.ini")
-    config.set_main_option("sqlalchemy.url", test_url.replace("%", "%%"))
-    command.upgrade(config, "head")
+    db.init_db()
 
     yield
 

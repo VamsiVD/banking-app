@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from app.core.store import transaction
 from app.db import current_session
 from app.errors import EmailAlreadyRegistered
-from app.tables import UserRow
+from app.sql_schemas.auth import UserRow
 
 
 def _to_dict(row: UserRow) -> dict:
@@ -39,6 +39,16 @@ class UserRepository:
             .execution_options(populate_existing=True)
         ).one_or_none()
         return _to_dict(row) if row is not None else None
+
+    def get_by_id(self, user_id: str) -> dict | None:
+        # The id is the email, so this is the same lookup by another name.
+        return self.get_by_email(user_id)
+
+    def list_all(self) -> list[dict]:
+        rows = current_session().scalars(
+            select(UserRow).order_by(UserRow.email)
+        ).all()
+        return [_to_dict(row) for row in rows]
 
     def create(self, email: str, full_name: str, hashed_password: bytes) -> dict:
         """Insert a user.

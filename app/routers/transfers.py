@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Query
 
-from app.schemas.transfer_schema import (
+from app.api_schemas.transfer_schema import (
     TransferPage,
     TransferRequest,
     TransferResult,

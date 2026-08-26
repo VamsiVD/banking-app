@@ -11,7 +11,7 @@ from app import db
 from app.errors import EmailAlreadyRegistered, InvalidCredentials
 from app.repositories.user_repository import user_repository
 from app.services import auth_service
-from app.schemas.auth_schema import LoginRequest, RegisterRequest
+from app.api_schemas.auth_schema import LoginRequest, RegisterRequest
 
 
 def register(client, email="sam@example.com", password="correct-horse", name="Sam Reed"):

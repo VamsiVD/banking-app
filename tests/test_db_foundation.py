@@ -18,7 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from app import db
 from app.core import store
 from app.errors import DuplicateAccount
-from app.schemas.account_schema import BankAccount
+from app.api_schemas.account_schema import BankAccount
 
 from conftest import DEFAULT_OWNER_ID, ensure_owner
 

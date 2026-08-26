@@ -4,8 +4,9 @@ Training project: a banking backend API in Python + FastAPI, on PostgreSQL.
 
 **Scope for this phase: API + database + auth.** No frontend. Accounts, the
 transaction ledger and registered users live in Postgres and survive a restart.
-Schema changes go through Alembic migrations, so say so in the group before you
-change a table everyone shares.
+Schema changes land in `app/tables.py` and are picked up automatically on the
+next app start, so say so in the group before you change a table everyone
+shares.
 
 The design rule across the app: **router (API) → service → core (rules +
 store) → repository → schema.** A router only translates HTTP in and out; a
@@ -36,7 +37,6 @@ pip install -r requirements.txt
 
 cp .env.example .env             # once; .env is gitignored
 docker compose up -d --wait      # starts Postgres, waits until it is ready
-alembic upgrade head             # creates the tables
 python -m scripts.seed           # optional: five demo accounts
 
 uvicorn app.main:app --reload
@@ -45,10 +45,11 @@ uvicorn app.main:app --reload
 Then open http://127.0.0.1:8000/docs, the interactive OpenAPI page is our
 front end for this phase. `GET /health` should return `{"status": "ok"}`, and
 `GET /health/db` tells you whether the database is actually reachable.
+Tables are created automatically on startup from `app/tables.py`.
 
-**After every pull, run `alembic upgrade head`.** If a teammate added a table
-and you skipped it, you get a confusing error about a missing column rather
-than a clear one about a missing migration.
+**After every pull, restart the app.** Tables get created automatically, but
+only new ones — if a teammate changed an existing column you get a confusing
+error rather than a clear one, and someone needs to run the ALTER by hand.
 
 ### Everyday Docker
 
@@ -91,7 +92,6 @@ pytest                           # 72 tests; needs Postgres running
 | `app/routers/transfers.py` | Transfer funds between two accounts. Reference implementation for the layering. |
 | `app/routers/queries.py` | List, filter, page, sort accounts. **Unclaimed, still a stub.** |
 | `app/routers/statements.py` | Transaction history and statements. **Unclaimed, still a stub.** |
-| `alembic/versions/` | Migrations. One file per schema change, committed with the change. |
 | `scripts/seed.py` | The five demo accounts. Idempotent. |
 
 ## Conventions
@@ -144,7 +144,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.tables import AccountRow
+from app.sql_schemas.tables import AccountRow
 
 @router.get("/accounts")
 def list_accounts(status: str | None = None, db: Session = Depends(get_session)):
@@ -154,40 +154,15 @@ def list_accounts(status: str | None = None, db: Session = Depends(get_session))
     return [... for row in db.scalars(stmt)]
 ```
 
-**Changing the schema.** Edit `app/tables.py`, then:
+**Changing the schema.** Edit `app/tables.py`. A brand-new table just appears
+next time the app (or `pytest`) starts — `db.init_db()` calls
+`Base.metadata.create_all()`, which only creates tables that do not exist yet.
 
-```bash
-alembic revision --autogenerate -m "add statements view"   # writes the migration
-alembic upgrade head                                       # applies it
-```
-
-Read the generated file before committing; autogenerate is good at columns and
-bad at intent. One trap: name a CHECK constraint **without** the `ck_<table>_`
-prefix, because the naming convention in `tables.py` adds it. Spelling the full
-name gets it applied twice, and autogenerate then reports a diff forever.
-
-Commit the migration in the same PR as the table change, and say so in the
-group chat so everyone knows to upgrade.
-
-**When two people add a migration at once**, both branch off the same revision
-and you end up with two heads. `alembic upgrade head` then refuses:
-
-```
-Multiple head revisions are present for given argument 'head'; please specify
-a specific target revision, '<branchname>@head' to narrow to a specific head,
-or 'heads' for all heads
-```
-
-Nothing is broken; the history just forked. Rejoin it:
-
-```bash
-alembic heads                                # shows the two
-alembic merge heads -m "merge <a> and <b>"   # writes a merge revision
-alembic upgrade head                         # runs both, then the merge
-```
-
-The merge revision contains no schema changes of its own — its only job is to
-have both heads as parents. Commit it like any other migration.
+**Altering an existing table** (new column, changed type, dropped constraint)
+needs a manual `ALTER` run against the database yourself — `create_all()` will
+not touch a table that already exists. Say so in the group chat so everyone
+running against the shared table applies the same change, and note it in the
+PR that changed `tables.py`.
 
 ## Working together
 
@@ -200,8 +175,8 @@ git checkout -b feat/<slice> upstream/feat/db-foundation
 ```
 
 **Do not branch off `api_endpoint_test`.** It predates the database — no
-`app/db.py`, no `app/tables.py`, no `alembic/`, no `docker-compose.yml` — so a
-slice built on it cannot be merged back without being rewritten.
+`app/db.py`, no `app/tables.py`, no `docker-compose.yml` — so a slice built on
+it cannot be merged back without being rewritten.
 
 Once people are branched off a shared moving branch, a few things start to
 matter that did not before:
@@ -211,10 +186,9 @@ matter that did not before:
   new commits.
 - **Merge it into your slice regularly**, not just at the end. A week of drift
   is a bad afternoon.
-- **Run `alembic upgrade head` after every pull or merge**, not only after
-  cloning. A teammate's new table is a migration you have not applied yet, and
-  the symptom is a confusing "column does not exist" rather than anything that
-  mentions migrations.
+- **Restart the app after every pull or merge**, not only after cloning. New
+  tables pick themselves up; a changed column on an existing table needs the
+  ALTER run by hand, or you get a confusing "column does not exist" instead.
 
 Each person owns one file under `app/routers/`. Shared files (`app/main.py`,
 `app/errors.py`, `app/db.py`, `app/tables.py`, `app/config.py`,

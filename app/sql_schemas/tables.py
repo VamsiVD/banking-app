@@ -20,18 +20,17 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Index,
-    LargeBinary,
     MetaData,
     Numeric,
     String,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from app.schemas.account_schema import AccountStatus, AccountType
-from app.schemas.transaction_schema import TransactionType
+from app.api_schemas.account_schema import AccountStatus, AccountType
+from app.api_schemas.transaction_schema import TransactionType
 
-# Deterministic constraint names. Without this Postgres invents them, and an
-# Alembic migration that wants to drop a constraint has nothing stable to name.
+# Deterministic constraint names. Without this Postgres invents them, and a
+# constraint violation error has nothing stable to name.
 NAMING_CONVENTION = {
     "ix": "ix_%(table_name)s_%(column_0_N_name)s",
     "uq": "uq_%(table_name)s_%(column_0_N_name)s",
@@ -138,32 +137,4 @@ class TransactionRow(Base):
         # The statements router pages one account's history in time order. This is
         # the index that query needs.
         Index("ix_transactions_account_number_timestamp", "account_number", "timestamp"),
-    )
-
-
-class UserRow(Base):
-    """A registered user, for the auth slice.
-
-    Linked to `accounts` via `AccountRow.owner_id`, a foreign key back to here.
-    """
-
-    __tablename__ = "users"
-
-    # The email, as `UserRepository.create()` has always set it. Keeping it means
-    # the `id` field of every /auth response stays exactly what it was. Worth
-    # revisiting if users are ever allowed to change their email, because then the
-    # primary key changes with it — a surrogate UUID is the usual answer.
-    id: Mapped[str] = mapped_column(String(255), primary_key=True)
-    # register_user() checks this in Python before inserting, which two
-    # simultaneous registrations can both pass. The constraint is what actually
-    # decides, and the repository turns the violation back into
-    # EmailAlreadyRegisteredError.
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    full_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    # bcrypt hands back bytes and security.verify_password() expects bytes, so
-    # store bytes. Encoding to text here would mean decoding on the way out and
-    # getting it subtly wrong once.
-    hashed_password: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
     )

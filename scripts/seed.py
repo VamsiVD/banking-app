@@ -27,7 +27,7 @@ from app.core import security
 from app.config import get_settings
 from app.core import store
 from app.repositories.user_repository import user_repository
-from app.schemas.account_schema import BankAccount
+from app.api_schemas.account_schema import BankAccount
 
 DEMO_ACCOUNTS = [
     ("1001", "Sana Smith", "savings", "1500.00", "2026-08-25", "active"),
@@ -99,6 +99,8 @@ def main() -> None:
             "Refusing to reset: DATABASE_URL and TEST_DATABASE_URL are the same "
             "database. Fix .env before running this."
         )
+
+    db.init_db()
 
     # Outside a request there is no middleware to open a session, so open one.
     with db.session_scope():

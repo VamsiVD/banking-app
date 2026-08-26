@@ -13,13 +13,12 @@ on the day, something changed — worth finding out what before carrying on.
 ```bash
 source .venv/bin/activate        # FIRST, in every terminal you use
 docker compose up -d --wait      # must reach "healthy" before anything else matters
-alembic upgrade head
-python -m scripts.seed --reset   # puts the five demo accounts back to their starting balances
+python -m scripts.seed --reset   # creates the tables if needed, then resets the demo balances
 uvicorn app.main:app --reload
 ```
 
-**Activate the venv in every terminal, including the second one.** `pytest`, `alembic`
-and `uvicorn` all live in `.venv/bin/` and are not on the system PATH — without it the
+**Activate the venv in every terminal, including the second one.** `pytest`
+and `uvicorn` both live in `.venv/bin/` and are not on the system PATH — without it the
 first thing you type gets `command not found` in front of an audience. Check with
 `which pytest`: it should print a path inside the project, not nothing.
 
@@ -197,10 +196,10 @@ request body alone, without consulting a single account.
 
 | Symptom | Fix |
 |---|---|
-| `pytest: command not found` (or `alembic`, `uvicorn`) | `source .venv/bin/activate` — this terminal has no venv |
+| `pytest: command not found` (or `uvicorn`) | `source .venv/bin/activate` — this terminal has no venv |
 | Balances are not the starting numbers | `python -m scripts.seed --reset` |
 | `Cannot reach PostgreSQL` on startup | `docker compose up -d --wait` |
-| `relation "accounts" does not exist` | `alembic upgrade head` |
+| `relation "accounts" does not exist` | `python -m scripts.seed`, or start the app once — both create missing tables |
 | `permission denied ... docker.sock` | `newgrp docker` |
 | Anything else odd | `docker compose ps` first — if it is not `healthy`, nothing else will work |
 

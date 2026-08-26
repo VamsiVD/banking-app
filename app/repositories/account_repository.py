@@ -8,7 +8,7 @@ are fetched stays in one file.
 from decimal import Decimal
 
 from app.core import store
-from app.schemas.account_schema import BankAccount
+from app.api_schemas.account_schema import BankAccount
 
 def get(account_number: str) -> BankAccount | None:
     return store.get(account_number)

@@ -14,9 +14,9 @@ is easier to read than trusting the rollback.
 
 from app.core import store, transfer_rules
 from app.errors import AccountNotFound, TransferNotFound
-from app.schemas.transaction_schema import TransactionType
+from app.api_schemas.transaction_schema import TransactionType
 from app.repositories import account_repository, transaction_repository
-from app.schemas.transfer_schema import (
+from app.api_schemas.transfer_schema import (
     TransferPage,
     TransferRequest,
     TransferResult,

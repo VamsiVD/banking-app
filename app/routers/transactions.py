@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.schemas.transaction_schema import MoneyMovement, Transaction
+from app.api_schemas.transaction_schema import MoneyMovement, Transaction
 from app.services import transaction_service
 
 

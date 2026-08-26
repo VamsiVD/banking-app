@@ -5,7 +5,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.primitives import AccountNumber, Currency, Money, PositiveMoney
+from app.api_schemas.primitives import AccountNumber, Currency, Money, PositiveMoney
 
 
 class TransactionType(str, Enum):

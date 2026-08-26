@@ -26,8 +26,8 @@ services:
       - ./docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       # Without this, `up -d` returns as soon as the container starts, which is
-      # several seconds before Postgres actually accepts connections — and
-      # `alembic upgrade head` would race it and fail.
+      # several seconds before Postgres actually accepts connections — and the
+      # app would race it and fail to connect on startup.
       test: ["CMD-SHELL", "pg_isready -U banking -d banking"]
       interval: 3s
       timeout: 5s

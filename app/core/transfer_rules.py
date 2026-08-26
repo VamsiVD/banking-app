@@ -9,7 +9,7 @@ an account".
 from decimal import Decimal
 
 from app.errors import AccountNotActive, CurrencyMismatch, InsufficientFunds
-from app.schemas.account_schema import AccountStatus, BankAccount
+from app.api_schemas.account_schema import AccountStatus, BankAccount
 
 
 def assert_active(account: BankAccount) -> None:

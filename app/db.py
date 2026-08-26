@@ -193,6 +193,17 @@ def check_connection() -> None:
         connection.execute(text("SELECT 1"))
 
 
+def init_db() -> None:
+    """Create any tables from `app.tables` that do not exist yet.
+
+    Only creates missing tables — it will not add a column to one that already
+    exists. Changing an existing table needs a manual ALTER, run by hand.
+    """
+    from app.sql_schemas.tables import Base
+
+    Base.metadata.create_all(get_engine())
+
+
 class SessionMiddleware:
     """Give every HTTP request a session, and clean it up afterwards."""
 

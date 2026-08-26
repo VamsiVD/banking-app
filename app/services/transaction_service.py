@@ -7,8 +7,8 @@ the business logic; the router only handles the HTTP request.
 from app.core import store
 from app.errors import AccountNotActive, AccountNotFound, InsufficientFunds
 from app.repositories import account_repository, transaction_repository
-from app.schemas.account_schema import AccountStatus
-from app.schemas.transaction_schema import MoneyMovement, TransactionType
+from app.api_schemas.account_schema import AccountStatus
+from app.api_schemas.transaction_schema import MoneyMovement, TransactionType
 
 
 def _active_account(account_number: str):

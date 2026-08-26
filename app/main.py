@@ -7,8 +7,10 @@ Needs a database. First time, or after pulling:
 
     cp .env.example .env          # once
     docker compose up -d --wait
-    alembic upgrade head
     python -m scripts.seed        # optional demo accounts
+
+Tables are created automatically on startup from `app/tables.py`. That only adds
+tables that do not exist yet — altering an existing one needs a manual ALTER.
 
 Every router is registered here already, including the ones that are still empty.
 That is on purpose: it means nobody has to edit this file to add their endpoints,
@@ -48,15 +50,15 @@ async def lifespan(_: FastAPI):
     try:
         db.check_connection()
     except SQLAlchemyError as exc:
-        print(
+        print( 
             "\nCannot reach PostgreSQL.\n"
             "  1. Is it running?      docker compose up -d --wait\n"
             "  2. Is .env present?    cp .env.example .env\n"
-            "  3. Are migrations in?  alembic upgrade head\n"
             f"\nUnderlying error: {exc}\n",
             file=sys.stderr,
         )
         raise
+    db.init_db()
     yield
     db.get_engine().dispose()
 

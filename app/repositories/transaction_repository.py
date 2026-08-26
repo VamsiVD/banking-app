@@ -16,9 +16,9 @@ from sqlalchemy import func, or_, select
 
 from app.core import store
 from app.db import current_session
-from app.schemas.transaction_schema import Transaction, TransactionType
-from app.schemas.transfer_schema import TransferSummary
-from app.tables import TransactionRow
+from app.api_schemas.transaction_schema import Transaction, TransactionType
+from app.api_schemas.transfer_schema import TransferSummary
+from app.sql_schemas.tables import TransactionRow
 
 
 def create(

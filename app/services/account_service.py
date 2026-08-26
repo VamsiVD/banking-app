@@ -1,7 +1,7 @@
 from datetime import date
 
 from app.repositories import account_repository
-from app.schemas.account_schema import (
+from app.api_schemas.account_schema import (
     AccountStatus,
     BankAccount,
     BankAccountCreate,

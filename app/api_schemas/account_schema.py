@@ -11,7 +11,7 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.primitives import AccountNumber, Currency, Money, UserId
+from app.api_schemas.primitives import AccountNumber, Currency, Money, UserId
 
 
 class AccountType(str, Enum):

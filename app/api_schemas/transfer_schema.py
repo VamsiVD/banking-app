@@ -9,8 +9,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.schemas.primitives import AccountNumber, Currency, PositiveMoney
-from app.schemas.transaction_schema import Transaction
+from app.api_schemas.primitives import AccountNumber, Currency, PositiveMoney
+from app.api_schemas.transaction_schema import Transaction
 
 
 class TransferRequest(BaseModel):
