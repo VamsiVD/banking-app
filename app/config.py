@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # Echo every statement SQLAlchemy emits. Useful when a query surprises you.
     SQL_ECHO: bool = False
 
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
 
 @lru_cache
 def get_settings() -> Settings:

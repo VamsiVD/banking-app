@@ -6,9 +6,16 @@ are fetched stays in one file.
 """
 
 from decimal import Decimal
+from sqlalchemy import func, select
 
 from app.core import store
 from app.api_schemas.account_schema import BankAccount
+
+def get_max_account_number() -> str | None:
+    with store.session() as session:
+        return session.scalar(
+            select(func.max(AccountTable.account_number))
+        )
 
 def get(account_number: str) -> BankAccount | None:
     return store.get(account_number)

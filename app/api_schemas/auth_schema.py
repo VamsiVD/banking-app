@@ -26,6 +26,11 @@ class LoginRequest(BaseModel):
     _validate_password = field_validator("password")(_check_password_bytes)
 
 
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 class UserProfile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
