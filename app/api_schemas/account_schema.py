@@ -33,7 +33,6 @@ class BankAccountCreate(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    account_number: AccountNumber
     account_holder_name: str = Field(min_length=1, max_length=100)
     account_type: AccountType
     status: AccountStatus
@@ -47,4 +46,5 @@ class BankAccount(BankAccountCreate):
     """An account as stored and returned by the API."""
 
     # Always set by the time an account is stored, so it is not optional here.
+    account_number: AccountNumber
     date_opened: date

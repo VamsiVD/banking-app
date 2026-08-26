@@ -40,6 +40,15 @@ from app.api_schemas.account_schema import BankAccount
 from app.api_schemas.transaction_schema import Transaction, TransactionType
 from app.sql_schemas.tables import AccountRow, TransactionRow
 
+def get_next_account_number() -> str:
+    accounts = list_all()
+
+    if not accounts:
+        return "100"
+
+    max_number = max(int(account.account_number) for account in accounts)
+
+    return str(max_number + 1)
 
 @contextmanager
 def transaction() -> Iterator[None]:
