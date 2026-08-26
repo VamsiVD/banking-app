@@ -82,6 +82,11 @@ class UserNotFound(AppError):
     code = "user_not_found"
 
 
+class AdminNotFound(AppError):
+    status_code = 404
+    code = "admin_not_found"
+
+
 class InvalidCredentials(AppError):
     status_code = 401
     code = "invalid_credentials"
