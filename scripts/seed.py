@@ -10,12 +10,20 @@ do once, on purpose, so it is a command.
 
 Idempotent — an account that already exists is left exactly as it is, balance
 included. Run it as often as you like; it will not undo your testing.
+
+    python -m scripts.seed --reset
+
+wipes accounts, the ledger and users first, then seeds. That is for rehearsing a
+demo, where the point is to start from the same numbers every time.
 """
 
+import argparse
+import sys
 from datetime import date
 from decimal import Decimal
 
 from app import db
+from app.config import get_settings
 from app.core import store
 from app.schemas.account_schema import BankAccount
 
@@ -58,8 +66,31 @@ def seed() -> tuple[int, int]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Wipe accounts, transactions and users first. For rehearsing a demo.",
+    )
+    args = parser.parse_args()
+
+    settings = get_settings()
+    if args.reset and settings.TEST_DATABASE_URL == settings.DATABASE_URL:
+        # The suite truncates between cases, so these are meant to differ. If they
+        # do not, someone's .env is wrong and --reset is about to prove it loudly.
+        sys.exit(
+            "Refusing to reset: DATABASE_URL and TEST_DATABASE_URL are the same "
+            "database. Fix .env before running this."
+        )
+
     # Outside a request there is no middleware to open a session, so open one.
     with db.session_scope():
+        if args.reset:
+            # Say what is about to go, because there is no undo.
+            existing = len(store.list_all())
+            print(f"Resetting: dropping {existing} account(s), the whole ledger, "
+                  f"and every registered user.")
+            store.reset()
         created, skipped = seed()
 
     print(f"\nSeeded {created} account(s), left {skipped} untouched.")

@@ -1,8 +1,8 @@
-"""Tests for the transfers slice: POST /transfers.
+"""Tests for the transfers slice: POST /transfers, GET /transfers.
 
-Reconstructed from the endpoint's behaviour — the original file was lost before it
-was ever committed, and survived only as a .pyc in tests/__pycache__. The test
-names come from that bytecode, so the coverage matches what was there.
+The write cases were reconstructed from the endpoint's behaviour — the original
+file was lost before it was ever committed and survived only as a .pyc in
+tests/__pycache__ — so their names match what was there.
 """
 
 from concurrent.futures import ThreadPoolExecutor
@@ -228,3 +228,190 @@ def test_concurrent_transfers_cannot_overdraw(client, make_account):
     assert sum(r.status_code == 201 for r in responses) == 100
     assert store.get("ACC-1").balance == Decimal("0.00")
     assert store.get("ACC-2").balance == Decimal("100.00")
+
+
+# --------------------------------------------------------------------------
+# refusals the write path did not cover
+# --------------------------------------------------------------------------
+
+
+def test_transfer_from_an_inactive_account_is_refused(client, make_account):
+    """`inactive` is a fourth status, not a synonym for frozen or closed."""
+    make_account("ACC-1", balance="100.00", status="inactive")
+    make_account("ACC-2", balance="0.00")
+
+    r = transfer(client)
+
+    assert r.status_code == 409
+    assert err(r) == "account_not_active"
+    assert store.get("ACC-1").balance == Decimal("100.00")
+
+
+def test_an_amount_with_too_many_decimals_is_refused(client, make_account):
+    """NUMERIC(18,2) cannot hold a third decimal, so neither can the request.
+
+    Rejected at the edge rather than silently rounded: a bank that quietly turns
+    10.005 into 10.01 has invented a cent.
+    """
+    make_account("ACC-1", balance="100.00")
+    make_account("ACC-2", balance="0.00")
+
+    r = transfer(client, amount="10.005")
+
+    assert r.status_code == 422
+    assert store.get("ACC-1").balance == Decimal("100.00")
+
+
+def test_an_over_long_description_is_refused(client, make_account):
+    """The column is VARCHAR(200); the schema stops it before the database has to."""
+    make_account("ACC-1", balance="100.00")
+    make_account("ACC-2", balance="0.00")
+
+    r = transfer(client, description="x" * 201)
+
+    assert r.status_code == 422
+    assert store.list_transactions() == []
+
+
+# --------------------------------------------------------------------------
+# reading transfers back
+# --------------------------------------------------------------------------
+
+
+def make_transfers(client, make_account):
+    """Three transfers between three accounts, oldest first: one, two, three.
+
+    ACC-2 both sends and receives, which is what makes the account filter
+    meaningful.
+    """
+    make_account("ACC-1", balance="500.00")
+    make_account("ACC-2", balance="500.00")
+    make_account("ACC-3", balance="500.00")
+
+    transfer(client, "ACC-1", "ACC-2", "10.00", description="one")
+    transfer(client, "ACC-2", "ACC-3", "20.00", description="two")
+    transfer(client, "ACC-1", "ACC-3", "30.00", description="three")
+
+
+def test_no_transfers_yet_is_an_empty_page_not_a_404(client):
+    """"Nothing has happened" and "that does not exist" are different facts."""
+    body = client.get("/transfers").json()
+
+    assert body == {"items": [], "total": 0, "limit": 50, "offset": 0}
+
+
+def test_a_transfer_can_be_read_back(client, make_account):
+    make_account("ACC-1", balance="100.00")
+    make_account("ACC-2", balance="0.00")
+    transfer(client, amount="40.00", description="rent")
+
+    item = client.get("/transfers").json()["items"][0]
+
+    assert item["from_account_number"] == "ACC-1"
+    assert item["to_account_number"] == "ACC-2"
+    assert item["amount"] == "40.00"
+    assert item["currency"] == "USD"
+    assert item["description"] == "rent"
+
+
+def test_transfers_come_back_newest_first(client, make_account):
+    make_transfers(client, make_account)
+
+    order = [i["description"] for i in client.get("/transfers").json()["items"]]
+
+    assert order == ["three", "two", "one"]
+
+
+def test_only_transfers_are_listed(client, make_account):
+    """A deposit moves money too, but it is not a transfer."""
+    make_account("ACC-1", balance="100.00")
+    make_account("ACC-2", balance="0.00")
+    client.post("/accounts/ACC-1/deposit", json={"amount": "5.00"})
+    transfer(client, amount="10.00")
+
+    body = client.get("/transfers").json()
+
+    assert body["total"] == 1
+    assert body["items"][0]["amount"] == "10.00"
+
+
+def test_filtering_by_account_matches_both_sides(client, make_account):
+    """A transfer is as much yours when you received it as when you sent it."""
+    make_transfers(client, make_account)
+
+    got = [i["description"] for i in
+           client.get("/transfers", params={"account_number": "ACC-2"}).json()["items"]]
+
+    # "two" ACC-2 sent, "one" it received. "three" never touched it.
+    assert got == ["two", "one"]
+
+
+def test_filtering_by_an_account_with_no_transfers_is_empty(client, make_account):
+    make_transfers(client, make_account)
+
+    body = client.get("/transfers", params={"account_number": "NOBODY"}).json()
+
+    assert body["items"] == []
+    assert body["total"] == 0
+
+
+def test_total_counts_every_match_not_just_the_page(client, make_account):
+    """The reason for the envelope: 2 of 3 has to be distinguishable from 2 of 2."""
+    make_transfers(client, make_account)
+
+    body = client.get("/transfers", params={"limit": 2}).json()
+
+    assert len(body["items"]) == 2
+    assert body["total"] == 3
+
+
+def test_offset_walks_through_the_pages(client, make_account):
+    make_transfers(client, make_account)
+
+    first = client.get("/transfers", params={"limit": 2, "offset": 0}).json()
+    second = client.get("/transfers", params={"limit": 2, "offset": 2}).json()
+
+    assert [i["description"] for i in first["items"]] == ["three", "two"]
+    assert [i["description"] for i in second["items"]] == ["one"]
+    assert second["total"] == 3
+
+
+def test_limit_is_capped(client, make_account):
+    """Without a ceiling, ?limit=1000000 is a way to make the server do work."""
+    make_transfers(client, make_account)
+
+    r = client.get("/transfers", params={"limit": 10_000})
+
+    assert r.status_code == 422
+
+
+def test_one_transfer_by_id(client, make_account):
+    make_account("ACC-1", balance="100.00")
+    make_account("ACC-2", balance="0.00")
+    transfer(client, amount="40.00", description="rent")
+    listed = client.get("/transfers").json()["items"][0]
+
+    r = client.get(f"/transfers/{listed['id']}")
+
+    assert r.status_code == 200
+    assert r.json() == listed
+
+
+def test_an_unknown_transfer_id_is_404(client):
+    r = client.get("/transfers/nosuchid")
+
+    assert r.status_code == 404
+    assert err(r) == "transfer_not_found"
+
+
+def test_a_deposits_id_is_not_a_transfer(client, make_account):
+    """Both live in the same table; only one of them is a transfer."""
+    make_account("ACC-1", balance="100.00")
+    deposit_id = client.post(
+        "/accounts/ACC-1/deposit", json={"amount": "5.00"}
+    ).json()["id"]
+
+    r = client.get(f"/transfers/{deposit_id}")
+
+    assert r.status_code == 404
+    assert err(r) == "transfer_not_found"
