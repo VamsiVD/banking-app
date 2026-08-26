@@ -1,7 +1,12 @@
 from fastapi import APIRouter, status
-from app.api_schemas.auth_schema import LoginRequest, RegisterRequest, UserProfile
-from app.services import auth_service
 
+from app.core import security
+from app.api_schemas.auth_schema import (
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    UserProfile,
+)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -19,9 +24,15 @@ def register(payload: RegisterRequest) -> UserProfile:
     return _to_profile(auth_service.register_user(payload))
 
 
-@router.post("/login", response_model=UserProfile)
-def login(payload: LoginRequest) -> UserProfile:
-    return _to_profile(auth_service.authenticate_user(payload))
+@router.post("/login", response_model=LoginResponse)
+def login(payload: LoginRequest) -> LoginResponse:
+    user = auth_service.authenticate_user(payload)
+    token = security.create_access_token(user["id"])
+
+    return LoginResponse(
+        access_token=token,
+        token_type="bearer",
+    )
 
 
 @router.get("/users", response_model=list[UserProfile])
