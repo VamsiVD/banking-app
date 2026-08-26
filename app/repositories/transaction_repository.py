@@ -1,7 +1,7 @@
-"""Transaction access for deposits, withdrawals, and ledger queries.
+"""Transaction access for deposits and withdrawals.
 
-Thin wrapper over `app.core.store`. When a real database lands, this is the
-file that changes — callers never touch `store` directly.
+Thin wrapper over app.core.store. Transaction services use this repository
+instead of accessing the database layer directly.
 """
 
 from decimal import Decimal
@@ -10,19 +10,18 @@ from app.core import store
 from app.schemas.transaction_schema import Transaction, TransactionType
 
 
-def add(
+def create(
     account_number: str,
-    type: TransactionType,
+    transaction_type: TransactionType,
     amount: Decimal,
     currency: str,
     balance_after: Decimal,
     counterparty: str | None = None,
     description: str | None = None,
 ) -> Transaction:
-    """Create and store a transaction ledger entry."""
     return store.record(
         account_number=account_number,
-        type=type,
+        type=transaction_type,
         amount=amount,
         currency=currency,
         balance_after=balance_after,
@@ -32,10 +31,8 @@ def add(
 
 
 def get_for_account(account_number: str) -> list[Transaction]:
-    """Return all transactions for an account."""
     return store.for_account(account_number)
 
 
-def list_all() -> list[Transaction]:
-    """Return all transactions."""
+def get_all() -> list[Transaction]:
     return store.list_transactions()
