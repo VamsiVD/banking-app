@@ -66,7 +66,7 @@ def execute_transfer(body: TransferRequest) -> TransferResult:
             destination, destination.balance + body.amount
         )
 
-        debit = transaction_repository.add(
+        debit = transaction_repository.create(
             source.account_number,
             TransactionType.transfer_out,
             body.amount,
@@ -75,7 +75,7 @@ def execute_transfer(body: TransferRequest) -> TransferResult:
             counterparty=destination.account_number,
             description=body.description,
         )
-        credit = transaction_repository.add(
+        credit = transaction_repository.create(
             destination.account_number,
             TransactionType.transfer_in,
             body.amount,

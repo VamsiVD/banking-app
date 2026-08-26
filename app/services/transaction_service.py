@@ -7,15 +7,17 @@ the business logic; the router only handles the HTTP request.
 from app.core import store
 from app.errors import AccountNotActive, AccountNotFound, InsufficientFunds
 from app.repositories import account_repository, transaction_repository
-from app.schemas.account_schema import AccountStatus, BankAccount
-from app.schemas.transaction_schema import MoneyMovement, Transaction, TransactionType
+from app.schemas.account_schema import AccountStatus
+from app.schemas.transaction_schema import MoneyMovement, TransactionType
 
 
-def _active_account(account_number: str) -> BankAccount:
+def _active_account(account_number: str):
     account = account_repository.get(account_number)
 
     if account is None:
-        raise AccountNotFound(f"No account with number {account_number!r}.")
+        raise AccountNotFound(
+            f"No account with number {account_number!r}."
+        )
 
     if account.status is not AccountStatus.active:
         raise AccountNotActive(
@@ -26,15 +28,16 @@ def _active_account(account_number: str) -> BankAccount:
     return account
 
 
-def deposit(account_number: str, movement: MoneyMovement) -> Transaction:
+def deposit(account_number: str, movement: MoneyMovement):
     with store.transaction():
         account = _active_account(account_number)
 
         account = account_repository.update_balance(
-            account, account.balance + movement.amount
+            account,
+            account.balance + movement.amount,
         )
 
-        return transaction_repository.add(
+        return transaction_repository.create(
             account.account_number,
             TransactionType.deposit,
             movement.amount,
@@ -44,7 +47,7 @@ def deposit(account_number: str, movement: MoneyMovement) -> Transaction:
         )
 
 
-def withdraw(account_number: str, movement: MoneyMovement) -> Transaction:
+def withdraw(account_number: str, movement: MoneyMovement):
     with store.transaction():
         account = _active_account(account_number)
 
@@ -56,10 +59,11 @@ def withdraw(account_number: str, movement: MoneyMovement) -> Transaction:
             )
 
         account = account_repository.update_balance(
-            account, account.balance - movement.amount
+            account,
+            account.balance - movement.amount,
         )
 
-        return transaction_repository.add(
+        return transaction_repository.create(
             account.account_number,
             TransactionType.withdrawal,
             movement.amount,

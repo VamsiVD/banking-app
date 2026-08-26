@@ -1,6 +1,7 @@
-"""Transaction access for deposits, withdrawals, and ledger queries.
+"""Transaction access for deposits and withdrawals.
 
-Thin wrapper over `app.core.store` — callers never touch `store` directly.
+Thin wrapper over `app.core.store`. Services use this repository instead of
+reaching into the database layer themselves.
 
 The transfer queries at the bottom are the exception: they are written as SQL
 against the session rather than routed through `store`, because filtering,
@@ -20,19 +21,18 @@ from app.schemas.transfer_schema import TransferSummary
 from app.tables import TransactionRow
 
 
-def add(
+def create(
     account_number: str,
-    type: TransactionType,
+    transaction_type: TransactionType,
     amount: Decimal,
     currency: str,
     balance_after: Decimal,
     counterparty: str | None = None,
     description: str | None = None,
 ) -> Transaction:
-    """Create and store a transaction ledger entry."""
     return store.record(
         account_number=account_number,
-        type=type,
+        type=transaction_type,
         amount=amount,
         currency=currency,
         balance_after=balance_after,
@@ -42,12 +42,10 @@ def add(
 
 
 def get_for_account(account_number: str) -> list[Transaction]:
-    """Return all transactions for an account."""
     return store.for_account(account_number)
 
 
-def list_all() -> list[Transaction]:
-    """Return all transactions."""
+def get_all() -> list[Transaction]:
     return store.list_transactions()
 
 
@@ -139,3 +137,4 @@ def get_transfer(transfer_id: str) -> TransferSummary | None:
     )
     row = current_session().scalars(stmt).one_or_none()
     return _to_summary(row) if row is not None else None
+
