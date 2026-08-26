@@ -11,14 +11,21 @@ on the day, something changed — worth finding out what before carrying on.
 ## Before you share your screen
 
 ```bash
+source .venv/bin/activate        # FIRST, in every terminal you use
 docker compose up -d --wait      # must reach "healthy" before anything else matters
 alembic upgrade head
 python -m scripts.seed --reset   # puts the five demo accounts back to their starting balances
 uvicorn app.main:app --reload
 ```
 
+**Activate the venv in every terminal, including the second one.** `pytest`, `alembic`
+and `uvicorn` all live in `.venv/bin/` and are not on the system PATH — without it the
+first thing you type gets `command not found` in front of an audience. Check with
+`which pytest`: it should print a path inside the project, not nothing.
+
 Open http://127.0.0.1:8000/docs and collapse every section. Have a **second terminal**
-ready — you need it for the tests and for the restart in Part 3.
+ready — you need it for the tests and for the restart in Part 3. Activate the venv there
+too.
 
 Starting balances after `--reset`:
 
@@ -78,7 +85,8 @@ a foreign key to `accounts`, and a `CHECK (amount > 0)`.
 **The headline:**
 
 ```bash
-pytest -q          # 87 passed
+source .venv/bin/activate     # if this is a fresh terminal
+pytest -q                     # 87 passed
 ```
 
 **Then the transfers slice, verbosely** — this is the better screenshare, because the
@@ -189,6 +197,7 @@ request body alone, without consulting a single account.
 
 | Symptom | Fix |
 |---|---|
+| `pytest: command not found` (or `alembic`, `uvicorn`) | `source .venv/bin/activate` — this terminal has no venv |
 | Balances are not the starting numbers | `python -m scripts.seed --reset` |
 | `Cannot reach PostgreSQL` on startup | `docker compose up -d --wait` |
 | `relation "accounts" does not exist` | `alembic upgrade head` |
