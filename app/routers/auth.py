@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from app.schemas.auth_schema import LoginRequest, RegisterRequest, UserProfile
 from app.services import auth_service
-from app.services.auth_service import EmailAlreadyRegisteredError, InvalidCredentialsError
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -17,19 +16,9 @@ def _to_profile(user: dict) -> UserProfile:
 
 @router.post("/register", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
 def register(payload: RegisterRequest) -> UserProfile:
-    try:
-        user = auth_service.register_user(payload)
-    except EmailAlreadyRegisteredError as e:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
-
-    return _to_profile(user)
+    return _to_profile(auth_service.register_user(payload))
 
 
 @router.post("/login", response_model=UserProfile)
 def login(payload: LoginRequest) -> UserProfile:
-    try:  
-        user = auth_service.authenticate_user(payload)
-    except InvalidCredentialsError as e:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, str(e))
-
-    return _to_profile(user)
+    return _to_profile(auth_service.authenticate_user(payload))

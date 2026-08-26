@@ -14,6 +14,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from app.errors import DuplicateAccount
 from app.schemas.account_schema import BankAccount
 from app.schemas.transaction_schema import Transaction, TransactionType
 
@@ -59,8 +60,12 @@ def exists(account_number: str) -> bool:
 
 
 def add(account: BankAccount) -> BankAccount:
-    """Insert a new account. Returns None-free; caller checks `exists` first."""
+    """Insert a new account. Raises DuplicateAccount if the number is taken."""
     with _lock:
+        if account.account_number in _accounts:
+            raise DuplicateAccount(
+                f"An account numbered {account.account_number!r} already exists."
+            )
         _accounts[account.account_number] = account
         return account
 
@@ -76,6 +81,12 @@ def list_all() -> list[BankAccount]:
     """Snapshot of every account. Filtering and paging happen in the router."""
     with _lock:
         return list(_accounts.values())
+
+
+def remove(account_number: str) -> bool:
+    """Delete an account. True if there was one to delete."""
+    with _lock:
+        return _accounts.pop(account_number, None) is not None
 
 
 # --- ledger ---
