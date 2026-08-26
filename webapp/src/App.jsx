@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import './App.css'
+import UserHome from './UserHome.jsx'
 
 function App() {
+  const [showUserHome, setShowUserHome] = useState(false)
   const [accountType, setAccountType] = useState('user')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,6 +37,14 @@ function App() {
     } catch (error) {
       console.error(error)
     }
+  }
+
+  const handleUserHome = () => {
+    setShowUserHome(true)
+  }
+
+  if (showUserHome) {
+    return <UserHome onBack={() => setShowUserHome(false)} />
   }
 
   return (
@@ -86,6 +96,14 @@ function App() {
             <span>→</span>
           </button>
         </form>
+
+        <button
+          type="button"
+          onClick={handleUserHome}
+          className="sign-in-button"
+        >
+          User Home
+        </button>
 
         {!isAdmin && (
           <p className="create-account">

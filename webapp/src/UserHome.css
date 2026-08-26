@@ -1,0 +1,167 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.user-home {
+  min-height: 100vh;
+  background: #f4f5f7;
+  color: #172b4d;
+}
+
+.top-bar {
+  background: white;
+  border-bottom: 1px solid #d9dce1;
+  padding: 22px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-bar h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.top-bar p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+.top-bar button {
+  border: 1px solid #1769aa;
+  background: white;
+  color: #1769aa;
+  padding: 10px 18px;
+  border-radius: 3px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.page-content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 38px 48px 60px;
+}
+
+.page-content section {
+  margin-bottom: 40px;
+}
+
+.page-content h2 {
+  margin: 0 0 16px;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.summary {
+  border-bottom: 1px solid #d9dce1;
+  padding-bottom: 24px;
+}
+
+.summary p {
+  margin: 0;
+  color: #667085;
+}
+
+.account-table,
+.transaction-table {
+  background: white;
+  border: 1px solid #dfe3e8;
+}
+
+.account-row,
+.transaction-row {
+  display: grid;
+  align-items: center;
+  min-height: 58px;
+  padding: 0 18px;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.account-row {
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1.3fr;
+}
+
+.transaction-row {
+  grid-template-columns: 1.1fr 1.2fr 1fr 2fr 1fr;
+}
+
+.account-row:last-child,
+.transaction-row:last-child {
+  border-bottom: none;
+}
+
+.account-header,
+.transaction-header {
+  background: #eef1f4;
+  min-height: 45px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-row span,
+.transaction-row span {
+  font-size: 14px;
+}
+
+.account-row strong,
+.transaction-row strong {
+  text-align: right;
+}
+
+.action-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.action-row button {
+  min-width: 160px;
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.action-row button:hover {
+  background: #12598f;
+}
+
+@media (max-width: 800px) {
+  .top-bar,
+  .page-content {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .account-row,
+  .transaction-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+    padding: 14px 18px;
+  }
+
+  .account-header,
+  .transaction-header {
+    display: none;
+  }
+
+  .account-row strong,
+  .transaction-row strong {
+    text-align: left;
+  }
+}
