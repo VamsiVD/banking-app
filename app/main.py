@@ -35,6 +35,7 @@ from app import db
 from app.errors import install_error_handlers
 from app.routers import (
     accounts,
+    admin,
     auth,
     queries,
     statements,
@@ -76,6 +77,7 @@ app.add_middleware(db.SessionMiddleware)
 
 install_error_handlers(app)
 app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(accounts.router)
 app.include_router(queries.router)
 app.include_router(transactions.router)
