@@ -9,7 +9,6 @@ import { clearSession, loadSession, saveSession } from './auth.js'
 function App() {
   // restore the saved session when the page loads
   const [session, setSession] = useState(() => loadSession())
-  const [showUserHome, setShowUserHome] = useState(false)
   const [showCreateAccount, setShowCreateAccount] = useState(false)
   const [accountType, setAccountType] = useState('user')
   const [email, setEmail] = useState('')
@@ -26,7 +25,6 @@ function App() {
     // dashboard until something else happened to trigger a re-render.
     const handleExpiry = () => {
       setSession(null)
-      setShowUserHome(false)
       setError('Your session expired. Please sign in again.')
     }
 
@@ -68,7 +66,6 @@ function App() {
   const handleSignOut = () => {
     clearSession()
     setSession(null)
-    setShowUserHome(false)
     setShowCreateAccount(false)
     setError(null)
   }
@@ -88,8 +85,8 @@ function App() {
     return <AdminHome admin={session} onSignOut={handleSignOut} />
   }
 
-  if (session?.role === 'user' || showUserHome) {
-    return <UserHome onBack={handleSignOut} />
+  if (session?.role === 'user') {
+    return <UserHome user={session} onBack={handleSignOut} />
   }
 
   return (
@@ -169,14 +166,6 @@ function App() {
             {submitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
-
-        <button
-          type="button"
-          onClick={() => setShowUserHome(true)}
-          className="preview-button"
-        >
-          User Home
-        </button>
 
         {!isAdmin && (
           <p className="create-account">

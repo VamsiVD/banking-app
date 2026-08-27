@@ -70,6 +70,97 @@ body {
   color: #667085;
 }
 
+.banner {
+  margin: 0 0 22px;
+  padding: 13px 16px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.banner-error {
+  background: #fdeaea;
+  border: 1px solid #f0b4b4;
+  color: #8a1f1f;
+}
+
+.empty {
+  margin: 0;
+  padding: 20px 18px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+button.ghost {
+  border: 1px solid #c3cad3;
+  background: white;
+  color: #172b4d;
+  padding: 7px 14px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.ghost:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.new-account-form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: white;
+  border: 1px solid #dfe3e8;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.new-account-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #667085;
+}
+
+.new-account-form select {
+  padding: 8px 10px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  font-size: 14px;
+  min-width: 180px;
+}
+
+.new-account-form button[type='submit'] {
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.new-account-form button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.new-account-form .banner {
+  flex-basis: 100%;
+  margin: 0;
+}
+
 .account-table,
 .transaction-table {
   background: white;
