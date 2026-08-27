@@ -39,6 +39,7 @@ from app.routers import (
     auth,
     queries,
     statements,
+    subscriptions,
     transactions,
     transfers,
 )
@@ -82,6 +83,7 @@ app.include_router(accounts.router)
 app.include_router(queries.router)
 app.include_router(transactions.router)
 app.include_router(statements.router)
+app.include_router(subscriptions.router)
 app.include_router(transfers.router)
 
 

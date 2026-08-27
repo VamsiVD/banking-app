@@ -312,7 +312,7 @@ def reset() -> None:
     with transaction():
         current_session().execute(
             text(
-                "TRUNCATE TABLE transactions, accounts, users "
+                "TRUNCATE TABLE transactions, subscriptions, accounts, users "
                 "RESTART IDENTITY CASCADE"
             )
         )

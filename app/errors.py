@@ -87,6 +87,17 @@ class AdminNotFound(AppError):
     code = "admin_not_found"
 
 
+class SubscriptionNotFound(AppError):
+    """No subscription with that id owned by the requesting user.
+
+    Also the answer when the id belongs to someone else's subscription — a 404,
+    not a 403, so a caller cannot use this endpoint to fish for ids that exist.
+    """
+
+    status_code = 404
+    code = "subscription_not_found"
+
+
 class InvalidCredentials(AppError):
     status_code = 401
     code = "invalid_credentials"
