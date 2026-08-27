@@ -1,19 +1,24 @@
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* Every rule is scoped under .user-home on purpose — see AdminHome.css for why:
+ * Vite bundles component CSS globally, so an unscoped `.account-row` here and
+ * one in AdminHome.css are the same rule fighting over the same properties.
+ */
 
 .user-home {
   min-height: 100vh;
   background: #f4f5f7;
   color: #172b4d;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.top-bar {
+/* index.css sets `h1, h2 { color: var(--text-h) }`, which is near-white under
+   `prefers-color-scheme: dark`. An element rule beats inheriting the colour
+   from .user-home, so without this every heading is white on a white card. */
+.user-home h1,
+.user-home h2 {
+  color: #172b4d;
+}
+
+.user-home .top-bar {
   background: white;
   border-bottom: 1px solid #d9dce1;
   padding: 22px 48px;
@@ -22,19 +27,19 @@ body {
   align-items: center;
 }
 
-.top-bar h1 {
+.user-home .top-bar h1 {
   margin: 0;
   font-size: 28px;
   font-weight: 600;
 }
 
-.top-bar p {
+.user-home .top-bar p {
   margin: 5px 0 0;
   color: #667085;
   font-size: 14px;
 }
 
-.top-bar button {
+.user-home .top-bar button {
   border: 1px solid #1769aa;
   background: white;
   color: #1769aa;
@@ -44,59 +49,59 @@ body {
   cursor: pointer;
 }
 
-.page-content {
+.user-home .page-content {
   max-width: 1180px;
   margin: 0 auto;
   padding: 38px 48px 60px;
 }
 
-.page-content section {
+.user-home .page-content section {
   margin-bottom: 40px;
 }
 
-.page-content h2 {
+.user-home .page-content h2 {
   margin: 0 0 16px;
   font-size: 21px;
   font-weight: 600;
 }
 
-.summary {
+.user-home .summary {
   border-bottom: 1px solid #d9dce1;
   padding-bottom: 24px;
 }
 
-.summary p {
+.user-home .summary p {
   margin: 0;
   color: #667085;
 }
 
-.banner {
+.user-home .banner {
   margin: 0 0 22px;
   padding: 13px 16px;
   border-radius: 3px;
   font-size: 14px;
 }
 
-.banner-error {
+.user-home .banner-error {
   background: #fdeaea;
   border: 1px solid #f0b4b4;
   color: #8a1f1f;
 }
 
-.empty {
+.user-home .empty {
   margin: 0;
   padding: 20px 18px;
   color: #667085;
   font-size: 14px;
 }
 
-.section-head {
+.user-home .section-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
 }
 
-button.ghost {
+.user-home button.ghost {
   border: 1px solid #c3cad3;
   background: white;
   color: #172b4d;
@@ -107,12 +112,12 @@ button.ghost {
   cursor: pointer;
 }
 
-button.ghost:disabled {
+.user-home button.ghost:disabled {
   opacity: 0.55;
   cursor: default;
 }
 
-.new-account-form {
+.user-home .new-account-form {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
@@ -123,7 +128,7 @@ button.ghost:disabled {
   margin-bottom: 16px;
 }
 
-.new-account-form label {
+.user-home .new-account-form label {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -132,7 +137,7 @@ button.ghost:disabled {
   color: #667085;
 }
 
-.new-account-form select {
+.user-home .new-account-form select {
   padding: 8px 10px;
   border: 1px solid #c3cad3;
   border-radius: 3px;
@@ -140,7 +145,7 @@ button.ghost:disabled {
   min-width: 180px;
 }
 
-.new-account-form button[type='submit'] {
+.user-home .new-account-form button[type='submit'] {
   background: #1769aa;
   color: white;
   border: none;
@@ -151,24 +156,24 @@ button.ghost:disabled {
   cursor: pointer;
 }
 
-.new-account-form button[type='submit']:disabled {
+.user-home .new-account-form button[type='submit']:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
-.new-account-form .banner {
+.user-home .new-account-form .banner {
   flex-basis: 100%;
   margin: 0;
 }
 
-.account-table,
-.transaction-table {
+.user-home .account-table,
+.user-home .transaction-table {
   background: white;
   border: 1px solid #dfe3e8;
 }
 
-.account-row,
-.transaction-row {
+.user-home .account-row,
+.user-home .transaction-row {
   display: grid;
   align-items: center;
   min-height: 58px;
@@ -176,21 +181,23 @@ button.ghost:disabled {
   border-bottom: 1px solid #edf0f3;
 }
 
-.account-row {
+.user-home .account-row {
   grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1.3fr;
 }
 
-.transaction-row {
+.user-home .transaction-row {
   grid-template-columns: 1.1fr 1.2fr 1fr 2fr 1fr;
 }
 
-.account-row:last-child,
-.transaction-row:last-child {
+.user-home .account-row:last-child,
+.user-home .transaction-row:last-child {
   border-bottom: none;
 }
 
-.account-header,
-.transaction-header {
+/* Matches AdminHome's table headers on purpose — same neutral grey, not the
+   brand blue, so the header row reads as a label strip, not another button. */
+.user-home .account-header,
+.user-home .transaction-header {
   background: #eef1f4;
   min-height: 45px;
   color: #667085;
@@ -198,17 +205,18 @@ button.ghost:disabled {
   font-weight: 600;
 }
 
-.account-row span,
-.transaction-row span {
+.user-home .account-row span,
+.user-home .transaction-row span {
   font-size: 14px;
 }
 
-.account-row strong,
-.transaction-row strong {
+.user-home .account-row strong,
+.user-home .transaction-row strong {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-.action-row {
+.user-home .action-row {
   display: flex;
   justify-content: center;
   gap: 24px;
@@ -216,7 +224,7 @@ button.ghost:disabled {
   margin-top: 20px;
 }
 
-.action-row button {
+.user-home .action-row button {
   min-width: 160px;
   background: #1769aa;
   color: white;
@@ -228,31 +236,31 @@ button.ghost:disabled {
   cursor: pointer;
 }
 
-.action-row button:hover {
+.user-home .action-row button:hover {
   background: #12598f;
 }
 
 @media (max-width: 800px) {
-  .top-bar,
-  .page-content {
+  .user-home .top-bar,
+  .user-home .page-content {
     padding-left: 22px;
     padding-right: 22px;
   }
 
-  .account-row,
-  .transaction-row {
+  .user-home .account-row,
+  .user-home .transaction-row {
     grid-template-columns: 1fr;
     gap: 5px;
     padding: 14px 18px;
   }
 
-  .account-header,
-  .transaction-header {
+  .user-home .account-header,
+  .user-home .transaction-header {
     display: none;
   }
 
-  .account-row strong,
-  .transaction-row strong {
+  .user-home .account-row strong,
+  .user-home .transaction-row strong {
     text-align: left;
   }
 }
