@@ -88,6 +88,12 @@
   color: #8a1f1f;
 }
 
+.user-home .banner-notice {
+  background: #e8f4ec;
+  border: 1px solid #a8d5ba;
+  color: #1c5a34;
+}
+
 .user-home .empty {
   margin: 0;
   padding: 20px 18px;
@@ -135,6 +141,11 @@
   font-size: 13px;
   font-weight: 600;
   color: #667085;
+  /* index.css sets `#root { text-align: center }` for the marketing template.
+     A column-flex label stretches its text to the input's full width, and
+     centered text in that wide box reads as randomly indented, not aligned
+     with the field below it. */
+  text-align: left;
 }
 
 .user-home .new-account-form select {
@@ -143,6 +154,7 @@
   border-radius: 3px;
   font-size: 14px;
   min-width: 180px;
+  background: white;
 }
 
 .user-home .new-account-form button[type='submit'] {
@@ -240,7 +252,100 @@
   background: #12598f;
 }
 
+.user-home .action-row button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  background: #1769aa;
+}
+
+.user-home .quick-action-form {
+  background: white;
+  border: 1px solid #dfe3e8;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.user-home .quick-action-form h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.user-home .quick-action-fields {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.user-home .quick-action-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #667085;
+  flex: 1 1 200px;
+  /* Same #root { text-align: center } leak as .new-account-form label. */
+  text-align: left;
+}
+
+.user-home .quick-action-fields .optional {
+  font-weight: 400;
+  text-transform: none;
+  color: #8a93a6;
+}
+
+.user-home .quick-action-fields select,
+.user-home .quick-action-fields input {
+  padding: 8px 10px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #172b4d;
+  background: white;
+  width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.user-home .quick-action-fields select:hover,
+.user-home .quick-action-fields input:hover {
+  border-color: #aeb8c5;
+}
+
+.user-home .quick-action-fields select:focus,
+.user-home .quick-action-fields input:focus {
+  border-color: #1769aa;
+  box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
+}
+
+.user-home .quick-action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.user-home .quick-action-buttons button[type='submit'] {
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-home .quick-action-buttons button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 @media (max-width: 800px) {
+
   .user-home .top-bar,
   .user-home .page-content {
     padding-left: 22px;

@@ -13,17 +13,34 @@ function formatMoney(amount) {
     return `${grouped}.${fraction.padEnd(2, '0').slice(0, 2)}`
 }
 
+const ACTION_LABELS = {
+    transfer: { title: 'Transfer between accounts', submit: 'Send Transfer' },
+    deposit: { title: 'Deposit funds', submit: 'Deposit' },
+    withdraw: { title: 'Withdraw funds', submit: 'Withdraw' },
+}
+
 function UserHome({ user, onBack }) {
     const [fullName, setFullName] = useState(user.email)
     const [accounts, setAccounts] = useState([])
     const [transfers, setTransfers] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [notice, setNotice] = useState(null)
 
     const [showNewAccountForm, setShowNewAccountForm] = useState(false)
     const [newAccountType, setNewAccountType] = useState('checking')
     const [creatingAccount, setCreatingAccount] = useState(false)
     const [createError, setCreateError] = useState(null)
+
+    // Which Quick Action form is open — 'transfer' | 'deposit' | 'withdraw' | null.
+    // Statement has no form; it stays inert until statements.py is built.
+    const [activeAction, setActiveAction] = useState(null)
+    const [actionAccount, setActionAccount] = useState('')
+    const [toAccount, setToAccount] = useState('')
+    const [amount, setAmount] = useState('')
+    const [description, setDescription] = useState('')
+    const [submittingAction, setSubmittingAction] = useState(false)
+    const [actionError, setActionError] = useState(null)
 
     const load = useCallback(async () => {
         setLoading(true)
@@ -42,7 +59,7 @@ function UserHome({ user, onBack }) {
             api
                 .get(`/auth/users/${encodeURIComponent(user.email)}`)
                 .then((profile) => setFullName(profile.full_name))
-                .catch(() => {})
+                .catch(() => { })
 
             // Transfers are scoped per account_number, so one call per account
             // the customer actually owns, merged and deduplicated (a transfer
@@ -70,6 +87,57 @@ function UserHome({ user, onBack }) {
     useEffect(() => {
         load()
     }, [load])
+
+    function openAction(action) {
+        setActiveAction(action)
+        setActionAccount(accounts[0]?.account_number ?? '')
+        setToAccount('')
+        setAmount('')
+        setDescription('')
+        setActionError(null)
+    }
+
+    async function handleActionSubmit(event) {
+        event.preventDefault()
+        setSubmittingAction(true)
+        setActionError(null)
+        setNotice(null)
+        try {
+            if (activeAction === 'deposit') {
+                const txn = await api.post(`/accounts/${actionAccount}/deposit`, {
+                    amount,
+                    description: description || undefined,
+                })
+                setNotice(
+                    `Deposited ${formatMoney(txn.amount)} ${txn.currency} into #${txn.account_number}. New balance: ${formatMoney(txn.balance_after)} ${txn.currency}.`,
+                )
+            } else if (activeAction === 'withdraw') {
+                const txn = await api.post(`/accounts/${actionAccount}/withdraw`, {
+                    amount,
+                    description: description || undefined,
+                })
+                setNotice(
+                    `Withdrew ${formatMoney(txn.amount)} ${txn.currency} from #${txn.account_number}. New balance: ${formatMoney(txn.balance_after)} ${txn.currency}.`,
+                )
+            } else if (activeAction === 'transfer') {
+                const result = await api.post('/transfers', {
+                    from_account_number: actionAccount,
+                    to_account_number: toAccount,
+                    amount,
+                    description: description || undefined,
+                })
+                setNotice(
+                    `Transferred ${formatMoney(result.debit.amount)} ${result.debit.currency} from #${actionAccount} to #${toAccount}.`,
+                )
+            }
+            setActiveAction(null)
+            await load()
+        } catch (err) {
+            setActionError(err.message)
+        } finally {
+            setSubmittingAction(false)
+        }
+    }
 
     async function handleCreateAccount(event) {
         event.preventDefault()
@@ -108,6 +176,11 @@ function UserHome({ user, onBack }) {
                 {error && (
                     <p className="banner banner-error" role="alert">
                         {error}
+                    </p>
+                )}
+                {notice && (
+                    <p className="banner banner-notice" role="status">
+                        {notice}
                     </p>
                 )}
 
@@ -197,11 +270,94 @@ function UserHome({ user, onBack }) {
                     <h2>Quick Actions</h2>
 
                     <div className="action-row">
-                        <button type="button">Transfer</button>
-                        <button type="button">Deposit</button>
-                        <button type="button">Withdraw</button>
+                        <button
+                            type="button"
+                            disabled={accounts.length === 0}
+                            onClick={() => openAction('transfer')}
+                        >
+                            Transfer
+                        </button>
+                        <button
+                            type="button"
+                            disabled={accounts.length === 0}
+                            onClick={() => openAction('deposit')}
+                        >
+                            Deposit
+                        </button>
+                        <button
+                            type="button"
+                            disabled={accounts.length === 0}
+                            onClick={() => openAction('withdraw')}
+                        >
+                            Withdraw
+                        </button>
+                        {/* Statement is inert for now — statements.py has no endpoint yet. */}
                         <button type="button">Statement</button>
                     </div>
+
+                    {activeAction && (
+                        <form className="quick-action-form" onSubmit={handleActionSubmit}>
+                            <h3>{ACTION_LABELS[activeAction].title}</h3>
+
+                            <div className="quick-action-fields">
+                                <label>
+                                    {activeAction === 'transfer' ? 'From account' : 'Account'}
+                                    <select
+                                        value={actionAccount}
+                                        onChange={(event) => setActionAccount(event.target.value)}
+                                        required
+                                    >
+                                        {accounts.map((account) => (
+                                            <option key={account.account_number} value={account.account_number}>
+                                                #{account.account_number} — {account.account_type.replace('_', ' ')} ({formatMoney(account.balance)} {account.currency})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                {activeAction === 'transfer' && (
+                                    <label>
+                                        To account
+                                        <input
+                                            type="text"
+                                            value={toAccount}
+                                            onChange={(event) => setToAccount(event.target.value)}
+                                            placeholder="Account number"
+                                            required
+                                        />
+                                    </label>
+                                )}
+
+                                <label>
+                                    Amount
+                                    <input
+                                        type="number"
+                                        min="0.01"
+                                        step="0.01"
+                                        value={amount}
+                                        onChange={(event) => setAmount(event.target.value)}
+                                        required
+                                    />
+                                </label>
+
+                            </div>
+
+                            {actionError && (
+                                <p className="banner banner-error" role="alert">
+                                    {actionError}
+                                </p>
+                            )}
+
+                            <div className="quick-action-buttons">
+                                <button type="submit" disabled={submittingAction}>
+                                    {submittingAction ? 'Submitting…' : ACTION_LABELS[activeAction].submit}
+                                </button>
+                                <button type="button" className="ghost" onClick={() => setActiveAction(null)}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    )}
                 </section>
 
                 <section>
