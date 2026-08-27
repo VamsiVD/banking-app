@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import AdminHome from './AdminHome.jsx'
 import UserHome from './UserHome.jsx'
@@ -16,6 +16,21 @@ function App() {
   const [submitting, setSubmitting] = useState(false)
 
   const isAdmin = accountType === 'admin'
+
+  useEffect(() => {
+    // The API client fires this the moment any authenticated request comes
+    // back 401 — session expired, revoked, or tampered with. Without this,
+    // the stored session is already gone but the UI would keep showing the
+    // dashboard until something else happened to trigger a re-render.
+    const handleExpiry = () => {
+      setSession(null)
+      setShowUserHome(false)
+      setError('Your session expired. Please sign in again.')
+    }
+
+    window.addEventListener('session-expired', handleExpiry)
+    return () => window.removeEventListener('session-expired', handleExpiry)
+  }, [])
 
   const handleSubmit = async (event) => {
     event.preventDefault()

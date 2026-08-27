@@ -76,6 +76,11 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
       // The token is gone, expired, or was never good. Drop it so the app
       // returns to the login screen instead of retrying with a dead token.
       clearSession()
+      if (auth) {
+        // `auth: false` requests (the login calls themselves) get a 401 for
+        // bad credentials, not a dead session — nothing to kick anyone out of.
+        window.dispatchEvent(new CustomEvent('session-expired'))
+      }
     }
     throw new ApiError(messageFrom(payload, response.status), {
       status: response.status,
