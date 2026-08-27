@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import AdminHome from './AdminHome.jsx'
 import UserHome from './UserHome.jsx'
+import CreateAccount from './CreateAccount.jsx'
 import { api } from './api/client.js'
 import { clearSession, loadSession, saveSession } from './auth.js'
 
@@ -9,6 +10,7 @@ function App() {
   // restore the saved session when the page loads
   const [session, setSession] = useState(() => loadSession())
   const [showUserHome, setShowUserHome] = useState(false)
+  const [showCreateAccount, setShowCreateAccount] = useState(false)
   const [accountType, setAccountType] = useState('user')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -67,7 +69,19 @@ function App() {
     clearSession()
     setSession(null)
     setShowUserHome(false)
+    setShowCreateAccount(false)
     setError(null)
+  }
+
+  if (showCreateAccount) {
+    return (
+      <CreateAccount
+        onBack={() => {
+          setShowCreateAccount(false)
+          setError(null)
+        }}
+      />
+    )
   }
 
   if (session?.role === 'admin') {
@@ -169,7 +183,10 @@ function App() {
             New customer?{' '}
             <button
               type="button"
-              onClick={() => console.log('Create account')}
+              onClick={() => {
+                setShowCreateAccount(true)
+                setError(null)
+              }}
             >
               Create Account
             </button>
