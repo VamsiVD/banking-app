@@ -6,7 +6,7 @@ import { api } from './api/client.js'
 import { clearSession, loadSession, saveSession } from './auth.js'
 
 function App() {
-  // Restored on load, so a refresh does not sign an admin out mid-task.
+  // restore the saved session when the page loads
   const [session, setSession] = useState(() => loadSession())
   const [showUserHome, setShowUserHome] = useState(false)
   const [accountType, setAccountType] = useState('user')
@@ -25,15 +25,19 @@ function App() {
     const endpoint = isAdmin ? '/admin/login' : '/auth/login'
 
     try {
-      // `auth: false` — there is no token yet, and sending a stale one from a
-      // previous session would be the wrong credential for this request.
-      const data = await api.post(endpoint, { email, password }, { auth: false })
+      // no token exists yet, so do not send an old session token
+      const data = await api.post(
+        endpoint,
+        { email, password },
+        { auth: false }
+      )
 
       const next = {
         token: data.access_token,
         role: isAdmin ? 'admin' : 'user',
         email,
       }
+
       saveSession(next)
       setSession(next)
       setPassword('')
@@ -55,14 +59,24 @@ function App() {
     return <AdminHome admin={session} onSignOut={handleSignOut} />
   }
 
-  // Signed-in customers, and the standalone preview button below, both land here.
   if (session?.role === 'user' || showUserHome) {
     return <UserHome onBack={handleSignOut} />
   }
 
   return (
     <main className="login-page">
-      <h1 className="bank-name">Banks-<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>R</span>-Us</h1>
+      <h1 className="bank-name">
+        Banks-
+        <span
+          style={{
+            display: 'inline-block',
+            transform: 'scaleX(-1)',
+          }}
+        >
+          R
+        </span>
+        -Us
+      </h1>
 
       <section className="login-card">
         <h2>Secure Sign In</h2>
@@ -93,6 +107,7 @@ function App() {
 
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Email</label>
+
           <input
             id="email"
             type="email"
@@ -102,6 +117,7 @@ function App() {
           />
 
           <label htmlFor="password">Password</label>
+
           <input
             id="password"
             type="password"
@@ -116,16 +132,19 @@ function App() {
             </p>
           )}
 
-          <button type="submit" className="sign-in-button" disabled={submitting}>
+          <button
+            type="submit"
+            className="sign-in-button"
+            disabled={submitting}
+          >
             {submitting ? 'Signing in…' : 'Sign In'}
-            <span>→</span>
           </button>
         </form>
 
         <button
           type="button"
           onClick={() => setShowUserHome(true)}
-          className="sign-in-button"
+          className="preview-button"
         >
           User Home
         </button>
@@ -133,7 +152,10 @@ function App() {
         {!isAdmin && (
           <p className="create-account">
             New customer?{' '}
-            <button type="button" onClick={() => console.log('Create account')}>
+            <button
+              type="button"
+              onClick={() => console.log('Create account')}
+            >
               Create Account
             </button>
           </p>
