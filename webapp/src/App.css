@@ -86,6 +86,10 @@ body {
   border-radius: 3px;
   font-size: 16px;
   outline: none;
+  /* Explicit, because the card is always light. Left to the user agent, a
+     browser in dark mode paints its own dark field on this white card. */
+  background: white;
+  color: #172b4d;
 }
 
 .login-card input:focus {
@@ -112,6 +116,23 @@ body {
 
 .sign-in-button:hover {
   background: #12598f;
+}
+
+.sign-in-button:disabled {
+  background: #7ba7c9;
+  cursor: default;
+}
+
+/* A failed sign-in: wrong password, or the API not running. Sits inside the
+   form, above the button, so it is read before the next attempt. */
+.login-error {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #f0b4b4;
+  border-radius: 3px;
+  background: #fdeaea;
+  color: #8a1f1f;
+  font-size: 14px;
 }
 
 .sign-in-button span {

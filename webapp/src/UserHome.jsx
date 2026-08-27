@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './UserHome.css'
 
 function UserHome({ onBack }) {

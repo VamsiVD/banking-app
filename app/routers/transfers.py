@@ -8,7 +8,7 @@ from app.api_schemas.transfer_schema import (
     TransferResult,
     TransferSummary,
 )
-from app.core.auth_guard import get_current_user
+from app.core.auth_guard import get_current_principal, get_current_user
 from app.services import transfer_service
 
 router = APIRouter(tags=["transfers"])
@@ -36,7 +36,7 @@ def list_transfers(
     ),
     limit: int = Query(default=50, ge=1, le=transfer_service.MAX_LIMIT),
     offset: int = Query(default=0, ge=0),
-    user=Depends(get_current_user),
+    caller=Depends(get_current_principal),
 ) -> TransferPage:
     return transfer_service.list_transfers(account_number, limit, offset)
 
@@ -46,5 +46,5 @@ def list_transfers(
     response_model=TransferSummary,
     summary="Fetch one transfer",
 )
-def get_transfer(transfer_id: str, user=Depends(get_current_user)) -> TransferSummary:
+def get_transfer(transfer_id: str, caller=Depends(get_current_principal)) -> TransferSummary:
     return transfer_service.get_transfer(transfer_id)

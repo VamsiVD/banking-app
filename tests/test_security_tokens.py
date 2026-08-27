@@ -1,8 +1,7 @@
 """Tests for the access-token half of app/core/security.py.
 
-These are about the verifier, not the encoder. Minting a token that works is the
-easy half; the half worth testing is that a token which *should not* be accepted
-is refused, and refused as an app error rather than a stray library exception.
+Mostly about the verifier: that a token which should not be accepted is refused,
+and refused as an app error rather than a stray library exception.
 """
 
 from datetime import datetime, timedelta, timezone
@@ -18,7 +17,6 @@ USER_ID = "sam@example.com"
 
 
 def _claims(**overrides) -> dict:
-    """A payload shaped like a real one, so tests can vary a single field."""
     now = datetime.now(timezone.utc)
     claims = {"sub": USER_ID, "iat": now, "exp": now + timedelta(minutes=30)}
     claims.update(overrides)
@@ -30,35 +28,26 @@ def test_a_token_round_trips_back_to_the_user_id():
 
 
 def test_the_lifetime_comes_from_the_configured_expiry():
-    token = create_access_token(USER_ID)
-    payload = jwt.decode(token, options={"verify_signature": False})
+    payload = jwt.decode(create_access_token(USER_ID), options={"verify_signature": False})
 
-    expected = get_settings().ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    assert payload["exp"] - payload["iat"] == expected
+    assert payload["exp"] - payload["iat"] == get_settings().ACCESS_TOKEN_EXPIRE_MINUTES * 60
 
 
 def test_an_explicit_zero_expiry_is_not_mistaken_for_no_argument():
-    """The reason the fallback tests `is None` and not truthiness.
-
-    `expires_minutes or DEFAULT` would turn a deliberate 0 into 30 minutes, and
-    the expiry test below would then be passing for the wrong reason.
-    """
+    """Why the fallback tests `is None`: `or` would turn a deliberate 0 into 30."""
     payload = jwt.decode(
         create_access_token(USER_ID, expires_minutes=0), options={"verify_signature": False}
     )
+
     assert payload["exp"] == payload["iat"]
 
 
 def test_an_expired_token_is_rejected():
-    expired = create_access_token(USER_ID, expires_minutes=-1)
-
     with pytest.raises(InvalidToken):
-        decode_access_token(expired)
+        decode_access_token(create_access_token(USER_ID, expires_minutes=-1))
 
 
 def test_a_tampered_token_is_rejected():
-    """Flip one character of the signature. The payload still parses; the
-    signature no longer matches it, which is the entire point of signing."""
     token = create_access_token(USER_ID)
     tampered = token[:-1] + ("A" if token[-1] != "A" else "B")
 
@@ -67,7 +56,6 @@ def test_a_tampered_token_is_rejected():
 
 
 def test_a_token_signed_with_another_secret_is_rejected():
-    """A well-formed, unexpired, correctly-shaped token that we did not issue."""
     forged = jwt.encode(_claims(), "another-service-secret-that-is-long-enough", algorithm="HS256")
 
     with pytest.raises(InvalidToken):
@@ -75,8 +63,7 @@ def test_a_token_signed_with_another_secret_is_rejected():
 
 
 def test_an_unsigned_token_is_rejected():
-    """The `alg: none` attack, which is why decode() gets an explicit
-    `algorithms=[...]` allow-list. Without it this token would verify."""
+    """Fails if decode() loses its `algorithms=[...]` allow-list."""
     unsigned = jwt.encode(_claims(), key="", algorithm="none")
 
     with pytest.raises(InvalidToken):
@@ -84,7 +71,7 @@ def test_an_unsigned_token_is_rejected():
 
 
 def test_a_token_without_an_expiry_is_rejected():
-    """A token with no `exp` never expires. Hence options={"require": [...]}."""
+    """Fails if decode() loses `options={"require": [...]}`."""
     claims = _claims()
     del claims["exp"]
     forever = jwt.encode(claims, get_settings().JWT_SECRET_KEY, algorithm="HS256")
@@ -103,9 +90,7 @@ def test_a_token_without_a_subject_is_rejected():
 
 
 def test_garbage_is_rejected_as_an_app_error_not_a_library_one():
-    """The guard depends on this: every failure arrives as an AppError subclass,
-    so the handler in errors.py turns it into a 401 in the standard envelope
-    instead of an unhandled 500."""
+    """An AppError subclass is what gets a 401 envelope instead of a 500."""
     with pytest.raises(InvalidToken) as caught:
         decode_access_token("this-is-not-a-token")
 
@@ -115,8 +100,7 @@ def test_garbage_is_rejected_as_an_app_error_not_a_library_one():
 
 
 def test_the_payload_is_readable_without_the_secret():
-    """Not a bug — a JWT is signed, not encrypted. This test exists to record
-    that we know it, and it is why nothing sensitive goes into a token."""
+    """A JWT is signed, not encrypted — hence nothing sensitive goes in one."""
     token = create_access_token(USER_ID)
 
     assert jwt.decode(token, options={"verify_signature": False})["sub"] == USER_ID

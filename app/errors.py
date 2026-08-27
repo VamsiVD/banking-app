@@ -104,15 +104,7 @@ class InvalidCredentials(AppError):
 
 
 class InvalidToken(AppError):
-    """Any token that cannot be trusted: expired, tampered with, malformed,
-    or missing a required claim.
-
-    Deliberately one code for all of those. Distinguishing them for the
-    caller would only help someone probing the endpoint.
-
-    401, not 403: 401 is "I do not know who you are", 403 is "I know, and
-    you may not". A bad token is the first.
-    """
+    """Expired, tampered with, malformed, or missing a required claim."""
 
     status_code = 401
     code = "invalid_token"

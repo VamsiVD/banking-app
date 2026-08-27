@@ -166,21 +166,21 @@ def test_unknown_field_is_rejected(client, auth_headers):
 # --------------------------------------------------------------------------
 
 
-def test_patch_changes_the_status(client, auth_headers, make_account):
+def test_patch_changes_the_status(client, auth_headers, admin_headers, make_account):
     make_account("ACC-1")
 
-    r = client.patch("/accounts/ACC-1", json={"status": "frozen"}, headers=auth_headers)
+    r = client.patch("/accounts/ACC-1", json={"status": "frozen"}, headers=admin_headers)
 
     assert r.status_code == 200
     assert r.json()["status"] == "frozen"
     assert client.get("/accounts/ACC-1", headers=auth_headers).json()["status"] == "frozen"
 
 
-def test_a_frozen_account_then_refuses_a_transfer(client, auth_headers, make_account):
+def test_a_frozen_account_then_refuses_a_transfer(client, auth_headers, admin_headers, make_account):
     """The status change reaches the money endpoints, because there is one store."""
     make_account("ACC-1")
     make_account("ACC-2")
-    client.patch("/accounts/ACC-1", json={"status": "frozen"}, headers=auth_headers)
+    client.patch("/accounts/ACC-1", json={"status": "frozen"}, headers=admin_headers)
 
     r = client.post(
         "/transfers",
@@ -195,14 +195,14 @@ def test_a_frozen_account_then_refuses_a_transfer(client, auth_headers, make_acc
     assert err(r) == "account_not_active"
 
 
-def test_patching_an_unknown_status_is_refused(client, auth_headers, make_account):
+def test_patching_an_unknown_status_is_refused(client, admin_headers, make_account):
     make_account("ACC-1")
 
-    assert client.patch("/accounts/ACC-1", json={"status": "sleepy"}, headers=auth_headers).status_code == 422
+    assert client.patch("/accounts/ACC-1", json={"status": "sleepy"}, headers=admin_headers).status_code == 422
 
 
-def test_patching_an_unknown_account_is_404(client, auth_headers):
-    r = client.patch("/accounts/NOPE", json={"status": "frozen"}, headers=auth_headers)
+def test_patching_an_unknown_account_is_404(client, admin_headers):
+    r = client.patch("/accounts/NOPE", json={"status": "frozen"}, headers=admin_headers)
 
     assert r.status_code == 404
     assert err(r) == "account_not_found"
@@ -213,27 +213,27 @@ def test_patching_an_unknown_account_is_404(client, auth_headers):
 # --------------------------------------------------------------------------
 
 
-def test_delete_removes_an_untouched_account(client, auth_headers, make_account):
+def test_delete_removes_an_untouched_account(client, auth_headers, admin_headers, make_account):
     make_account("ACC-1")
 
-    assert client.delete("/accounts/ACC-1", headers=auth_headers).status_code == 200
+    assert client.delete("/accounts/ACC-1", headers=admin_headers).status_code == 200
     assert client.get("/accounts/ACC-1", headers=auth_headers).status_code == 404
 
 
-def test_deleting_an_unknown_account_is_404(client, auth_headers):
-    r = client.delete("/accounts/NOPE", headers=auth_headers)
+def test_deleting_an_unknown_account_is_404(client, admin_headers):
+    r = client.delete("/accounts/NOPE", headers=admin_headers)
 
     assert r.status_code == 404
     assert err(r) == "account_not_found"
 
 
-def test_an_account_with_history_cannot_be_deleted(client, auth_headers, make_account, db_session):
+def test_an_account_with_history_cannot_be_deleted(client, auth_headers, admin_headers, make_account, db_session):
     """A ledger is only auditable if entries cannot be orphaned."""
     make_account("ACC-1")
     with store.transaction():
         store.record("ACC-1", "deposit", Decimal("10.00"), "USD", Decimal("110.00"))
 
-    r = client.delete("/accounts/ACC-1", headers=auth_headers)
+    r = client.delete("/accounts/ACC-1", headers=admin_headers)
 
     assert r.status_code == 409
     assert err(r) == "account_has_history"

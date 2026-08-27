@@ -31,6 +31,7 @@ from app.api_schemas.account_schema import BankAccount
 # fixture/helper defaults to; ensure_owner() creates it lazily since
 # clean_state truncates users between tests.
 DEFAULT_OWNER_ID = "owner@example.com"
+DEFAULT_ADMIN_ID = "admin@example.com"
 
 
 def ensure_owner(owner_id: str = DEFAULT_OWNER_ID) -> None:
@@ -102,6 +103,29 @@ def auth_headers(client: TestClient) -> dict[str, str]:
     r = client.post(
         "/auth/login",
         json={"email": DEFAULT_OWNER_ID, "password": "password123"},
+    )
+    token = r.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_headers(client: TestClient) -> dict[str, str]:
+    """The same, for an administrator — the caller who may change an account.
+
+    Registers on the way in rather than relying on a seeded row, because the
+    fixtures truncate between cases.
+    """
+    client.post(
+        "/admin/register",
+        json={
+            "email": DEFAULT_ADMIN_ID,
+            "password": "password123",
+            "full_name": "Test Admin",
+        },
+    )
+    r = client.post(
+        "/admin/login",
+        json={"email": DEFAULT_ADMIN_ID, "password": "password123"},
     )
     token = r.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
