@@ -13,15 +13,21 @@ a decision worth making on purpose, not by default.
 """
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.security import ROLE_ADMIN, ROLE_USER, decode_access_token_claims
 from app.errors import InvalidToken
 from app.repositories.admin_repository import admin_repository
 from app.repositories.user_repository import user_repository
 
-# Read the Bearer token from the Authorization header.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# Read the Bearer token from the Authorization header. Not OAuth2PasswordBearer:
+# that scheme has Swagger's Authorize dialog POST form-encoded `username`/
+# `password` straight to `tokenUrl`, but `/auth/login` takes a JSON body keyed
+# on `email` — the dialog's request would 422 every time. HTTPBearer instead
+# gives Swagger a plain "paste your token" field; auto_error is off so a
+# missing header falls through to `_unauthenticated()` below and stays a 401,
+# not HTTPBearer's own 403.
+bearer_scheme = HTTPBearer(auto_error=False, bearerFormat="JWT")
 
 # Which repository owns each role's records. Admins and customers are separate
 # tables on purpose, so a token minted for one can never resolve to the other.
@@ -41,10 +47,15 @@ def _unauthenticated() -> HTTPException:
     )
 
 
-def get_current_principal(token: str = Depends(oauth2_scheme)) -> dict:
+def get_current_principal(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> dict:
     """Return whoever the token is for — customer or admin — tagged with `role`."""
+    if credentials is None:
+        raise _unauthenticated()
+
     try:
-        claims = decode_access_token_claims(token)
+        claims = decode_access_token_claims(credentials.credentials)
     except InvalidToken:
         raise _unauthenticated()
 
