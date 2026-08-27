@@ -47,14 +47,14 @@ function App() {
         { auth: false }
       )
 
-      const next = {
+      const next = { // this is where the frontend takes the token returned from the backend
         token: data.access_token,
         role: isAdmin ? 'admin' : 'user',
         email,
       }
 
       saveSession(next)
-      setSession(next)
+      setSession(next) // save the session in state and establishes a login happening
       setPassword('')
     } catch (err) {
       setError(err.message)
