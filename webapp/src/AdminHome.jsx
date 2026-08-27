@@ -181,7 +181,7 @@ function AdminHome({ admin, onSignOut }) {
     <main className="admin-home">
       <header className="top-bar">
         <div>
-          <h1>Banks-R-Us</h1>
+          <h1>Banks-<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>R</span>-Us</h1>
           <p>Administrator console</p>
         </div>
 

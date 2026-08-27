@@ -62,7 +62,7 @@ function App() {
 
   return (
     <main className="login-page">
-      <h1 className="bank-name">Banks-R-Us</h1>
+      <h1 className="bank-name">Banks-<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>R</span>-Us</h1>
 
       <section className="login-card">
         <h2>Secure Sign In</h2>
