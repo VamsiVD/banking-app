@@ -62,6 +62,11 @@ def configure(url: str | None = None, echo: bool | None = None) -> Engine:
         # connections in the pool; without this the next request gets the
         # corpse instead of a new connection.
         pool_pre_ping=True,
+        # Supabase's transaction-mode pooler hands out a different physical
+        # connection per statement, so a server-side prepared statement from
+        # one call can vanish (or belong to someone else) by the next. Force
+        # psycopg to skip preparing statements entirely.
+        connect_args={"prepare_threshold": None},
     )
     _session_factory = sessionmaker(bind=_engine, expire_on_commit=False)
     return _engine
