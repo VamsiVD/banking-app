@@ -1,0 +1,370 @@
+/* Every rule is scoped under .admin-home on purpose.
+ *
+ * Vite bundles component CSS globally — an `import './X.css'` is not scoped to
+ * X — so a bare `.account-row` here and a bare `.account-row` in UserHome.css
+ * are the same rule, and whichever file loads last wins. They disagree about
+ * column count, so the loser's table breaks. Scoping is what keeps the two
+ * pages independent.
+ *
+ * The palette deliberately matches UserHome.css (same #f4f5f7 ground, same
+ * #1769aa accent) so the two read as one product.
+ */
+
+.admin-home {
+  min-height: 100vh;
+  background: #f4f5f7;
+  color: #172b4d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* index.css sets `h1, h2 { color: var(--text-h) }`, which is near-white under
+   `prefers-color-scheme: dark`. An element rule beats inheriting the colour
+   from .admin-home, so without this every heading is white on a white card. */
+.admin-home h1,
+.admin-home h2 {
+  color: #172b4d;
+}
+
+.admin-home .top-bar {
+  background: white;
+  border-bottom: 1px solid #d9dce1;
+  padding: 22px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-home .top-bar h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.admin-home .top-bar p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+.admin-home .top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-home .top-bar-actions .who {
+  color: #667085;
+  font-size: 14px;
+}
+
+.admin-home .top-bar button {
+  border: 1px solid #1769aa;
+  background: white;
+  color: #1769aa;
+  padding: 10px 18px;
+  border-radius: 3px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-home .page-content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 38px 48px 60px;
+}
+
+.admin-home .page-content section {
+  margin-bottom: 40px;
+}
+
+.admin-home .page-content h2 {
+  margin: 0 0 16px;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.admin-home .section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.admin-home button.ghost {
+  border: 1px solid #c3cad3;
+  background: white;
+  color: #172b4d;
+  padding: 7px 14px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-home button.ghost:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Messages ---------------------------------------------------------------- */
+
+.admin-home .banner {
+  margin: 0 0 22px;
+  padding: 13px 16px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.admin-home .banner-error {
+  background: #fdeaea;
+  border: 1px solid #f0b4b4;
+  color: #8a1f1f;
+}
+
+.admin-home .banner-notice {
+  background: #e8f4ec;
+  border: 1px solid #a8d5ba;
+  color: #1c5a34;
+}
+
+/* Overview tiles ---------------------------------------------------------- */
+
+.admin-home .summary {
+  border-bottom: 1px solid #d9dce1;
+  padding-bottom: 28px;
+}
+
+.admin-home .tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: 18px;
+}
+
+.admin-home .tile {
+  background: white;
+  border: 1px solid #dfe3e8;
+  border-radius: 3px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-home .tile-label {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-home .tile-value {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.admin-home .status-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.admin-home .pill {
+  display: inline-block;
+  min-width: 68px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  text-align: center;
+}
+
+.admin-home .pill-active {
+  background: #e3f3e9;
+  color: #1c5a34;
+}
+
+.admin-home .pill-inactive {
+  background: #eceef1;
+  color: #52606d;
+}
+
+.admin-home .pill-frozen {
+  background: #e4eefb;
+  color: #14508c;
+}
+
+.admin-home .pill-closed {
+  background: #fbe6e6;
+  color: #8a1f1f;
+}
+
+/* Filters ----------------------------------------------------------------- */
+
+.admin-home .controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.admin-home .controls input[type='search'] {
+  flex: 1 1 260px;
+  padding: 9px 12px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  background: white;
+  color: #172b4d;
+  font-size: 14px;
+}
+
+.admin-home .controls label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-home .controls select {
+  padding: 8px 10px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  background: white;
+  font-size: 14px;
+  color: #172b4d;
+}
+
+/* Tables ------------------------------------------------------------------ */
+
+.admin-home .account-table,
+.admin-home .transfer-table,
+.admin-home .user-table {
+  background: white;
+  border: 1px solid #dfe3e8;
+}
+
+.admin-home .account-row,
+.admin-home .transfer-row,
+.admin-home .user-row {
+  display: grid;
+  align-items: center;
+  min-height: 62px;
+  padding: 0 18px;
+  border-bottom: 1px solid #edf0f3;
+  gap: 10px;
+}
+
+.admin-home .account-row {
+  grid-template-columns: 0.9fr 1.6fr 1fr 1.1fr 1.3fr 1.1fr 0.8fr;
+}
+
+.admin-home .transfer-row {
+  grid-template-columns: 1.1fr 1fr 1fr 2fr 1.2fr;
+}
+
+.admin-home .user-row {
+  grid-template-columns: 1.2fr 2fr 1fr;
+}
+
+.admin-home .account-row:last-child,
+.admin-home .transfer-row:last-child,
+.admin-home .user-row:last-child {
+  border-bottom: none;
+}
+
+.admin-home .account-header,
+.admin-home .transfer-header,
+.admin-home .user-header {
+  background: #eef1f4;
+  min-height: 45px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-home .account-row span,
+.admin-home .transfer-row span,
+.admin-home .user-row span {
+  font-size: 14px;
+}
+
+/* The owner's email under the holder name — present for scanning, not reading. */
+.admin-home .account-row small {
+  display: block;
+  color: #667085;
+  font-size: 12px;
+}
+
+.admin-home .account-row strong,
+.admin-home .transfer-row strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-home .account-row select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  background: white;
+  font-size: 13px;
+  color: #172b4d;
+}
+
+.admin-home button.danger {
+  border: 1px solid #d98686;
+  background: white;
+  color: #8a1f1f;
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-home button.danger:hover {
+  background: #fdeaea;
+}
+
+.admin-home button.danger:disabled,
+.admin-home .account-row select:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.admin-home .empty {
+  margin: 0;
+  padding: 24px 18px;
+  color: #667085;
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
+  .admin-home .top-bar,
+  .admin-home .page-content {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .admin-home .account-row,
+  .admin-home .transfer-row,
+  .admin-home .user-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 14px 18px;
+  }
+
+  .admin-home .account-header,
+  .admin-home .transfer-header,
+  .admin-home .user-header {
+    display: none;
+  }
+
+  .admin-home .account-row strong,
+  .admin-home .transfer-row strong {
+    text-align: left;
+  }
+}

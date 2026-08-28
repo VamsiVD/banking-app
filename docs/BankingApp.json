@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "name": "BankAccountCreate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "account_number",
+    "account_holder_name",
+    "account_type",
+    "status"
+  ],
+  "properties": {
+    "account_number": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 34,
+      "description": "unique account number (IBAN or local format)"
+    },
+    "account_holder_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "full name of the account owner"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "checking",
+        "savings",
+        "business",
+        "fixed_deposit"
+      ],
+      "description": "type of bank account"
+    },
+    "balance": {
+      "type": "number",
+      "minimum": 0,
+      "description": "current account balance"
+    },
+    "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3,
+      "description": "ISO 4217 currency code, e.g. USD"
+    },
+    "date_opened": {
+      "type": "string",
+      "format": "date",
+      "description": "date the account was opened"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "frozen",
+        "closed"
+      ],
+      "description": "status of the account: active/inactive/frozen/closed"
+    }
+  }
+}
