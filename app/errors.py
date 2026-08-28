@@ -49,6 +49,67 @@ class CurrencyMismatch(AppError):
     code = "currency_mismatch"
 
 
+class AccountHasHistory(AppError):
+    """Deleting an account that has ledger entries.
+
+    A ledger is only auditable if its entries outlive nothing. Closing an account
+    is a status change; deleting one that has moved money is not offered.
+    """
+
+    status_code = 409
+    code = "account_has_history"
+
+
+class TransferNotFound(AppError):
+    """No transfer with that id.
+
+    Also raised when the id belongs to a real ledger entry that is not a
+    transfer — a deposit is not a transfer, and answering with one would be a
+    stranger result than a 404.
+    """
+
+    status_code = 404
+    code = "transfer_not_found"
+
+
+class EmailAlreadyRegistered(AppError):
+    status_code = 409
+    code = "email_already_registered"
+
+
+class UserNotFound(AppError):
+    status_code = 404
+    code = "user_not_found"
+
+
+class AdminNotFound(AppError):
+    status_code = 404
+    code = "admin_not_found"
+
+
+class SubscriptionNotFound(AppError):
+    """No subscription with that id owned by the requesting user.
+
+    Also the answer when the id belongs to someone else's subscription — a 404,
+    not a 403, so a caller cannot use this endpoint to fish for ids that exist.
+    """
+
+    status_code = 404
+    code = "subscription_not_found"
+
+
+class InvalidCredentials(AppError):
+    status_code = 401
+    code = "invalid_credentials"
+
+
+class InvalidToken(AppError):
+    """Expired, tampered with, malformed, or missing a required claim."""
+
+    status_code = 401
+    code = "invalid_token"
+
+
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:

@@ -1,0 +1,38 @@
+# Postgres for local development. One command for the whole team:
+#
+#     docker compose up -d --wait
+#
+# `--wait` blocks until the healthcheck below passes, so the very next command in
+# your terminal (or in CI) can safely run migrations.
+
+services:
+  db:
+    image: postgres:17
+    container_name: banking-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: banking
+      POSTGRES_PASSWORD: banking
+      POSTGRES_DB: banking
+    ports:
+      # Host 5432. If you already run Postgres natively, change the LEFT number
+      # only (e.g. "5433:5432") and update DATABASE_URL in your .env to match.
+      - "5432:5432"
+    volumes:
+      # Named volume, so `docker compose down` keeps your data. Use
+      # `docker compose down -v` when you deliberately want a clean slate.
+      - banking-db-data:/var/lib/postgresql/data
+      # Runs only on first initialisation, i.e. while the volume is still empty.
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Without this, `up -d` returns as soon as the container starts, which is
+      # several seconds before Postgres actually accepts connections — and the
+      # app would race it and fail to connect on startup.
+      test: ["CMD-SHELL", "pg_isready -U banking -d banking"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  banking-db-data:

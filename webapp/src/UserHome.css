@@ -1,0 +1,371 @@
+/* Every rule is scoped under .user-home on purpose — see AdminHome.css for why:
+ * Vite bundles component CSS globally, so an unscoped `.account-row` here and
+ * one in AdminHome.css are the same rule fighting over the same properties.
+ */
+
+.user-home {
+  min-height: 100vh;
+  background: #f4f5f7;
+  color: #172b4d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* index.css sets `h1, h2 { color: var(--text-h) }`, which is near-white under
+   `prefers-color-scheme: dark`. An element rule beats inheriting the colour
+   from .user-home, so without this every heading is white on a white card. */
+.user-home h1,
+.user-home h2 {
+  color: #172b4d;
+}
+
+.user-home .top-bar {
+  background: white;
+  border-bottom: 1px solid #d9dce1;
+  padding: 22px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-home .top-bar h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.user-home .top-bar p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+.user-home .top-bar button {
+  border: 1px solid #1769aa;
+  background: white;
+  color: #1769aa;
+  padding: 10px 18px;
+  border-radius: 3px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-home .page-content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 38px 48px 60px;
+}
+
+.user-home .page-content section {
+  margin-bottom: 40px;
+}
+
+.user-home .page-content h2 {
+  margin: 0 0 16px;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.user-home .summary {
+  border-bottom: 1px solid #d9dce1;
+  padding-bottom: 24px;
+}
+
+.user-home .summary p {
+  margin: 0;
+  color: #667085;
+}
+
+.user-home .banner {
+  margin: 0 0 22px;
+  padding: 13px 16px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.user-home .banner-error {
+  background: #fdeaea;
+  border: 1px solid #f0b4b4;
+  color: #8a1f1f;
+}
+
+.user-home .banner-notice {
+  background: #e8f4ec;
+  border: 1px solid #a8d5ba;
+  color: #1c5a34;
+}
+
+.user-home .empty {
+  margin: 0;
+  padding: 20px 18px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.user-home .section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.user-home button.ghost {
+  border: 1px solid #c3cad3;
+  background: white;
+  color: #172b4d;
+  padding: 7px 14px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-home button.ghost:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.user-home .new-account-form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: white;
+  border: 1px solid #dfe3e8;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.user-home .new-account-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #667085;
+  /* index.css sets `#root { text-align: center }` for the marketing template.
+     A column-flex label stretches its text to the input's full width, and
+     centered text in that wide box reads as randomly indented, not aligned
+     with the field below it. */
+  text-align: left;
+}
+
+.user-home .new-account-form select {
+  padding: 8px 10px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  font-size: 14px;
+  min-width: 180px;
+  background: white;
+}
+
+.user-home .new-account-form button[type='submit'] {
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-home .new-account-form button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.user-home .new-account-form .banner {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.user-home .account-table,
+.user-home .transaction-table {
+  background: white;
+  border: 1px solid #dfe3e8;
+}
+
+.user-home .account-row,
+.user-home .transaction-row {
+  display: grid;
+  align-items: center;
+  min-height: 58px;
+  padding: 0 18px;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.user-home .account-row {
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1.3fr;
+}
+
+.user-home .transaction-row {
+  grid-template-columns: 1.1fr 1.2fr 1fr 2fr 1fr;
+}
+
+.user-home .account-row:last-child,
+.user-home .transaction-row:last-child {
+  border-bottom: none;
+}
+
+/* Matches AdminHome's table headers on purpose — same neutral grey, not the
+   brand blue, so the header row reads as a label strip, not another button. */
+.user-home .account-header,
+.user-home .transaction-header {
+  background: #eef1f4;
+  min-height: 45px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-home .account-row span,
+.user-home .transaction-row span {
+  font-size: 14px;
+}
+
+.user-home .account-row strong,
+.user-home .transaction-row strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.user-home .action-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.user-home .action-row button {
+  min-width: 160px;
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-home .action-row button:hover {
+  background: #12598f;
+}
+
+.user-home .action-row button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  background: #1769aa;
+}
+
+.user-home .quick-action-form {
+  background: white;
+  border: 1px solid #dfe3e8;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.user-home .quick-action-form h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.user-home .quick-action-fields {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.user-home .quick-action-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #667085;
+  flex: 1 1 200px;
+  /* Same #root { text-align: center } leak as .new-account-form label. */
+  text-align: left;
+}
+
+.user-home .quick-action-fields .optional {
+  font-weight: 400;
+  text-transform: none;
+  color: #8a93a6;
+}
+
+.user-home .quick-action-fields select,
+.user-home .quick-action-fields input {
+  padding: 8px 10px;
+  border: 1px solid #c3cad3;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #172b4d;
+  background: white;
+  width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.user-home .quick-action-fields select:hover,
+.user-home .quick-action-fields input:hover {
+  border-color: #aeb8c5;
+}
+
+.user-home .quick-action-fields select:focus,
+.user-home .quick-action-fields input:focus {
+  border-color: #1769aa;
+  box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
+}
+
+.user-home .quick-action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.user-home .quick-action-buttons button[type='submit'] {
+  background: #1769aa;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-home .quick-action-buttons button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 800px) {
+
+  .user-home .top-bar,
+  .user-home .page-content {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .user-home .account-row,
+  .user-home .transaction-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+    padding: 14px 18px;
+  }
+
+  .user-home .account-header,
+  .user-home .transaction-header {
+    display: none;
+  }
+
+  .user-home .account-row strong,
+  .user-home .transaction-row strong {
+    text-align: left;
+  }
+}
