@@ -3,12 +3,14 @@ import './App.css'
 import AdminHome from './AdminHome.jsx'
 import UserHome from './UserHome.jsx'
 import CreateAccount from './CreateAccount.jsx'
+import LandingPage from './LandingPage.jsx'
 import { api } from './api/client.js'
 import { clearSession, loadSession, saveSession } from './auth.js'
 
 function App() {
   // restore the saved session when the page loads
   const [session, setSession] = useState(() => loadSession())
+  const [showLanding, setShowLanding] = useState(true)
   const [showCreateAccount, setShowCreateAccount] = useState(false)
   const [accountType, setAccountType] = useState('user')
   const [email, setEmail] = useState('')
@@ -67,7 +69,12 @@ function App() {
     clearSession()
     setSession(null)
     setShowCreateAccount(false)
+    setShowLanding(true)
     setError(null)
+  }
+
+  if (!session && showLanding) {
+    return <LandingPage onGetStarted={() => { setShowLanding(false); setShowCreateAccount(true) }} />
   }
 
   if (showCreateAccount) {
@@ -91,6 +98,17 @@ function App() {
 
   return (
     <main className="login-page">
+      <button
+        type="button"
+        className="back-to-home"
+        onClick={() => setShowLanding(true)}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M19 12H5M11 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Back to home
+      </button>
+
       <h1 className="bank-name">
         Banks-
         <span

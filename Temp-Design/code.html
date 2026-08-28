@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Wealth | Institutional Banking</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#c4c6ce",
+                      "tertiary-container": "#1a2434",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#49607e",
+                      "primary-container": "#0a2540",
+                      "on-surface": "#181c1e",
+                      "primary-fixed-dim": "#b0c8eb",
+                      "surface-container-high": "#e5e8eb",
+                      "on-error": "#ffffff",
+                      "surface-container-highest": "#e0e3e6",
+                      "surface-variant": "#e0e3e6",
+                      "primary-fixed": "#d2e4ff",
+                      "on-secondary-fixed-variant": "#003ea8",
+                      "tertiary-fixed": "#d9e3f9",
+                      "tertiary": "#050e1d",
+                      "on-background": "#181c1e",
+                      "surface-bright": "#f7fafd",
+                      "surface-container": "#ebeef1",
+                      "surface-container-low": "#f1f4f7",
+                      "secondary": "#004ccc",
+                      "on-tertiary-fixed-variant": "#3d4759",
+                      "on-tertiary": "#ffffff",
+                      "primary": "#000f22",
+                      "inverse-on-surface": "#eef1f4",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#bdc7dc",
+                      "outline": "#74777e",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed": "#00174b",
+                      "on-primary-fixed": "#001c37",
+                      "on-tertiary-container": "#818b9f",
+                      "on-surface-variant": "#43474d",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#f7fafd",
+                      "on-primary-fixed-variant": "#314865",
+                      "surface-dim": "#d7dadd",
+                      "inverse-surface": "#2d3133",
+                      "secondary-fixed": "#dbe1ff",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#f3f3ff",
+                      "on-primary-container": "#768dad",
+                      "inverse-primary": "#b0c8eb",
+                      "background": "#f7fafd",
+                      "secondary-fixed-dim": "#b4c5ff",
+                      "secondary-container": "#0762ff",
+                      "on-tertiary-fixed": "#121c2b",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sm": "12px",
+                      "lg": "48px",
+                      "max-width": "1280px",
+                      "margin-mobile": "16px",
+                      "md": "24px",
+                      "base": "8px",
+                      "margin-desktop": "64px",
+                      "gutter": "24px",
+                      "xl": "80px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "body-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "14px", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .shimmer-text {
+            background: linear-gradient(90deg, theme('colors.on-primary') 0%, theme('colors.inverse-primary') 50%, theme('colors.on-primary') 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 76, 204, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 76, 204, 0); }
+        }
+        .pulse-btn {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .nav-scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-secondary-container selection:text-on-primary">
+<!-- TopNavBar -->
+<header class="bg-surface-container-lowest/90 backdrop-blur-sm border-b border-outline-variant sticky top-0 z-50 w-full transition-all duration-300" id="main-header">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto h-20">
+<!-- Brand -->
+<div class="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2 cursor-pointer">Banks-Я-Us</div>
+<!-- Navigation Links (Desktop) -->
+<nav class="hidden md:flex items-center gap-lg">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-70" href="#">Personal</a>
+<a class="font-label-md text-label-md text-secondary border-b-2 border-secondary pb-1 hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-70" href="#">Wealth</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-70" href="#">Corporate</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-70" href="#">Markets</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-70" href="#">Insights</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-md">
+<button aria-label="Search" class="hidden md:flex items-center justify-center text-primary hover:text-secondary transition-colors p-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="bg-secondary text-on-primary font-label-md text-label-md px-6 py-3 rounded hover:bg-secondary-container transition-colors shadow-sm flex items-center gap-2 h-12 pulse-btn">
+                    Client Login
+                    <span class="material-symbols-outlined text-[18px]" data-icon="login">login</span>
+</button>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden flex items-center justify-center text-primary p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col">
+<!-- Hero Section -->
+<section class="relative w-full min-h-[80vh] flex items-center justify-center px-margin-mobile md:px-margin-desktop py-xl overflow-hidden bg-primary">
+<!-- WebGL Background -->
+<canvas class="absolute inset-0 w-full h-full" id="shader-canvas"></canvas>
+<!-- Overlay to ensure text readability if needed -->
+<div class="absolute inset-0 bg-primary/20 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto space-y-lg">
+<!-- Primary Brand Image -->
+<div class="w-full max-w-[664px] mx-auto animate-fade-in-up"><span class="font-display text-display text-on-primary">Banks-Я-Us</span></div>
+<h1 class="font-display text-display shimmer-text animate-fade-in-up" style="animation-delay: 100ms;">
+                    Private Banking &amp; Global Wealth Management
+                </h1>
+<p class="font-body-lg text-body-lg text-on-primary-container max-w-2xl mx-auto animate-fade-in-up" style="animation-delay: 200ms;">
+                    Delivering institutional precision and tailored strategies to safeguard and accelerate multi-generational wealth.
+                </p>
+<div class="flex flex-col sm:flex-row items-center gap-md pt-sm animate-fade-in-up" style="animation-delay: 300ms;">
+<button class="w-full sm:w-auto h-12 px-8 bg-surface-container-lowest text-primary font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm flex items-center justify-center gap-2 hover:scale-105 active:scale-95 duration-200">
+                        Get Started
+                        <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="w-full sm:w-auto h-12 px-8 border border-on-primary/30 text-on-primary font-label-md text-label-md rounded hover:bg-on-primary/10 transition-colors flex items-center justify-center hover:scale-105 active:scale-95 duration-200">
+                        Learn More
+                    </button>
+</div>
+</div>
+</section>
+<!-- Trust Bar -->
+<section class="w-full bg-surface-container-lowest border-y border-outline-variant py-md reveal">
+<div class="max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-500 hover:opacity-100">
+<!-- Trust Logos (Placeholders for visual structure) -->
+<div class="font-headline-md text-on-surface-variant tracking-widest uppercase text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined" data-icon="account_balance">account_balance</span> REGULATORY</div>
+<div class="font-headline-md text-on-surface-variant tracking-widest uppercase text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined" data-icon="assured_workload">assured_workload</span> PARTNER INST.</div>
+<div class="font-headline-md text-on-surface-variant tracking-widest uppercase text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined" data-icon="shield">shield</span> SECURE DATA</div>
+<div class="font-headline-md text-on-surface-variant tracking-widest uppercase text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined" data-icon="gavel">gavel</span> COMPLIANCE</div>
+</div>
+</section>
+<!-- Features Section (Bento Grid Style) -->
+<section class="w-full py-xl px-margin-mobile md:px-margin-desktop bg-surface">
+<div class="max-w-max-width mx-auto">
+<div class="text-center mb-xl reveal">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-sm">Uncompromising Standards</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">Our architecture is built on the pillars of absolute security, bespoke management, and unrestricted access to global opportunities.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Feature 1: Institutional Security -->
+<div class="md:col-span-12 lg:col-span-8 bg-surface-container-lowest border border-surface-variant rounded-xl p-lg flex flex-col justify-between hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,15,34,0.12)] transition-all duration-300 overflow-hidden relative group reveal" style="transition-delay: 100ms;">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary-fixed opacity-10 rounded-bl-full transform translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform duration-700"></div>
+<div class="relative z-10 mb-xl">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mb-md border border-surface-variant group-hover:bg-primary group-hover:text-on-primary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-sm">Institutional Security</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">Military-grade encryption and multi-layered authentication protocols ensure your assets and data remain impenetrable. Built for the highest stakes.</p>
+</div>
+<div class="relative z-10 mt-auto">
+<img class="w-full h-48 object-cover rounded-lg border border-surface-variant mix-blend-multiply group-hover:opacity-90 transition-opacity" data-alt="A highly detailed, ultra-modern abstract visualization of digital security. Glowing blue geometric nodes and interconnected lines forming a secure mesh over a pristine white and deep navy background. Bright, high-key lighting emphasizing a sleek, corporate, institutional banking aesthetic. Sharp focus, high contrast, conveying stability and advanced technology." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTps-wwMAdbxw_WPIzlw2mbFzM2Ls39pPAeUe-ky26grnUNzt4fsftEf1U4Os74LB70CZgb0nQh35dfKb_x-5lawX90SZ_iV8DxtqBSpO_u6_jeAtfU740H6YREck1XCmgpJan-YiRVXAuVuYE27JT1Cy36QDpWejUSBOuFkIXAsnfnV-EIicRd6pz94iiZNK20zb3uQ6R1FXUFxc99Y6Gbni5EkHRHV6rPTba9j1rSE2cX9QMyB4"/>
+</div>
+</div>
+<!-- Feature 2: Tailored Portfolio Management -->
+<div class="md:col-span-6 lg:col-span-4 bg-surface-container-lowest border border-surface-variant rounded-xl p-lg flex flex-col hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,15,34,0.12)] transition-all duration-300 group reveal" style="transition-delay: 200ms;">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mb-md border border-surface-variant group-hover:bg-primary group-hover:text-on-primary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="pie_chart">pie_chart</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-sm">Tailored Portfolio Management</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">Bespoke investment strategies designed by elite analysts, aligning precisely with your risk tolerance and multi-generational objectives.</p>
+<div class="space-y-4 mt-auto">
+<!-- Mini Progress Indicators -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1 text-on-surface-variant"><span class="">Equities</span> <span class="text-primary font-bold">45%</span></div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-secondary w-[45%] rounded-full group-hover:bg-primary transition-colors"></div></div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1 text-on-surface-variant"><span class="">Fixed Income</span> <span class="text-primary font-bold">35%</span></div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary w-[35%] rounded-full group-hover:bg-secondary transition-colors"></div></div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1 text-on-surface-variant"><span class="">Alternatives</span> <span class="text-primary font-bold">20%</span></div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary-container w-[20%] rounded-full"></div></div>
+</div>
+</div>
+</div>
+<!-- Feature 3: Global Market Access -->
+<div class="md:col-span-6 lg:col-span-12 bg-primary text-on-primary border border-primary-container rounded-xl p-lg flex flex-col md:flex-row items-center gap-xl hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,15,34,0.25)] transition-all duration-300 relative overflow-hidden group reveal" style="transition-delay: 300ms;">
+<div class="absolute inset-0 opacity-10 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" data-alt="A stylized, minimalist topographical map of the world in deep navy and subtle silver tones. High-end corporate aesthetic, clean lines, representing global connectivity and institutional reach. Soft, diffused lighting, sophisticated banking motif." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA7uIylyxg5qts2DLqZjSL2abdYCCJA2i_YxqL8IUBaGgLIqoAoxO86pcfkXkjiy9OD9-dTW-mOgWXnwReZrAfOQyAS9iyp8WQvj2F7ZAiRB3-9f7lA5e4nzm2FKjMA8ZiLJNNBRWL7lKgNUvswwXDVqnfbrfVnpzKwVO_vqTcETkhhZHwstv_cdyENQ7GWEv_4lNfeDGrGz5fyXBxtHrf1Fg-kZr9-gLhUsxQ6IUY03bMrYZsYzFA');"></div>
+<div class="relative z-10 md:w-1/2">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container flex items-center justify-center text-on-primary mb-md border border-surface-tint group-hover:bg-secondary transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="public">public</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-sm">Global Market Access</h3>
+<p class="font-body-md text-body-md text-on-primary-container mb-md">Direct execution capabilities across major global exchanges, private equity opportunities, and emerging markets, providing unparalleled liquidity and diversification.</p>
+<a class="font-label-md text-label-md text-secondary-fixed hover:text-on-primary transition-colors inline-flex items-center gap-2 group/link" href="#">
+                                Explore Markets <span class="material-symbols-outlined text-[16px] group-hover/link:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="relative z-10 md:w-1/2 w-full h-64 rounded-lg border border-surface-tint overflow-hidden bg-tertiary-container">
+<img class="w-full h-full object-cover opacity-80 mix-blend-luminosity group-hover:scale-105 transition-transform duration-500" data-alt="A sleek, modern data visualization dashboard displayed on a screen. Showing elegant, thin-line graphs trending upwards against a dark, deep navy background. Accentuated with subtle electric blue highlights indicating active global market trades. High-end financial technology aesthetic, crisp and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM7zMYq8PTkn9EOW6mt7z6u7kAhR0QVEZRyR5t9Oc3MxxzG3Rk9yFwr4hwetYTuYryQ89yzTflg19bLs0lyVWADscMorxud0RSgTlaI1XpRy52fiSowEtcICK7KGBUP4c0eciaF47NSQUEGMGVRuGOhMNBX3CzrUbXuOWGCT1GaYvzOQ9vRzoCymuSSDhJ2KXNu0qXbSgVsvfo9RLJjVoKu1NVORkMfeVLwbfCXukAyryM6kI7NZg"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- About Section -->
+<section class="w-full py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest border-t border-outline-variant reveal">
+<div class="max-w-max-width mx-auto flex flex-col md:flex-row items-center gap-xl">
+<div class="w-full md:w-1/2 order-2 md:order-1 relative group">
+<div class="absolute -inset-4 bg-surface-container-low rounded-xl transform -rotate-2 z-0 group-hover:-rotate-3 transition-transform duration-500"></div>
+<img class="relative z-10 w-full h-auto rounded-lg shadow-sm border border-surface-variant object-cover aspect-video group-hover:scale-[1.02] transition-transform duration-500" data-alt="A sophisticated, high-end corporate office interior in a modern high-rise building. Floor-to-ceiling windows showing a bright city skyline. Sleek minimalist furniture, deep navy accents, and pristine white surfaces. Professional, established, and wealthy atmosphere. Natural daylight, high resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPYvGB3YjArtFUPXHR3asb-jB4RQpfQV30rqlfoYSHkc7yzBHFbWhzQTTOE5xuR8Evvks09OOzNdPoyHykypKAb3OTGbLpWZqP5904208Hrk-ieyF2RtmiqkqIFjazEflJFYYtsRWOlBVN4ogjZb8-M8qi5AT-nL-01hDOjLvPSpJTmwNvjScJReAUXWPCFCYRTHamygDN9tKk8kcTjlhgmU9g17M3P9xqkROIp3OaMdUGG1kbN4"/>
+</div>
+<div class="w-full md:w-1/2 order-1 md:order-2 space-y-md">
+<h2 class="font-headline-lg text-headline-lg text-primary">Heritage of Excellence</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">For over decades, Banks-Я-Us has navigated complex financial landscapes with absolute discretion and technical rigor. We believe true wealth management requires a synthesis of deep market intelligence and personalized structural planning.</p>
+<p class="font-body-md text-body-md text-outline">
+                         Our commitment is to be the steadfast anchor for your legacy, ensuring precision in every transaction and clarity in every strategy.
+                     </p>
+<div class="pt-sm">
+<a class="font-label-md text-label-md text-primary border-b border-primary hover:text-secondary hover:border-secondary transition-colors pb-1 inline-flex items-center gap-2 group" href="#">
+                             Read Our Manifesto
+                             <span class="material-symbols-outlined text-[16px] opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary w-full py-xl px-margin-mobile md:px-margin-desktop mt-auto reveal">
+<div class="max-w-max-width mx-auto flex flex-col gap-md">
+<!-- Brand & Info -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-y-8 border-b border-surface-tint pb-lg">
+<div class="font-headline-lg text-headline-lg text-on-primary">Banks-Я-Us</div>
+<!-- Nav Links -->
+<nav class="flex flex-wrap gap-x-8 gap-y-4">
+<a class="font-body-sm text-body-sm text-on-primary-container hover:text-secondary-fixed transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-primary-container hover:text-secondary-fixed transition-colors" href="#">Security</a>
+<a class="font-body-sm text-body-sm text-on-primary-container hover:text-secondary-fixed transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-primary-container hover:text-secondary-fixed transition-colors" href="#">Regulatory Disclosures</a>
+<a class="font-body-sm text-body-sm text-on-primary-container hover:text-secondary-fixed transition-colors" href="#">Sitemap</a>
+<a class="font-body-sm text-body-sm text-on-primary-container hover:text-secondary-fixed transition-colors" href="#">Contact Us</a>
+</nav>
+</div>
+<!-- Copyright -->
+<div class="font-body-sm text-body-sm text-on-primary-container pt-sm">© 2024 Banks-Я-Us Institutional Banking. All rights reserved. Member FDIC. Equal Housing Lender.</div>
+</div>
+</footer>
+<script>
+    // WebGL Shader Background
+    const canvas = document.getElementById('shader-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: false });
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    
+    const vertexShader = `
+        varying vec2 v_texCoord;
+        void main() {
+            v_texCoord = uv;
+            gl_Position = vec4(position, 1.0);
+        }
+    `;
+    
+    const fragmentShader = `
+        precision highp float;
+        varying vec2 v_texCoord;
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        uniform vec2 u_mouse;
+
+        void main() {
+            vec2 uv = v_texCoord;
+            vec2 mouse = u_mouse / u_resolution;
+            
+            // Create subtle organic flow lines
+            float flow = sin(uv.x * 3.0 + u_time * 0.2) * cos(uv.y * 2.0 - u_time * 0.1);
+            float dist = distance(uv, mouse);
+            
+            // Core color (Institutional blue #0a2540)
+            vec3 baseColor = vec3(0.039, 0.145, 0.251);
+            vec3 lightColor = vec3(0.1, 0.25, 0.4);
+            
+            // Mix based on flow and mouse proximity
+            float highlight = smoothstep(0.4, 0.0, dist) * 0.1;
+            vec3 color = mix(baseColor, lightColor, flow * 0.1 + highlight);
+            
+            // Add very faint noise for texture
+            float n = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+            color += n * 0.01;
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `;
+
+    const uniforms = {
+        u_time: { value: 0 },
+        u_resolution: { value: new THREE.Vector2() },
+        u_mouse: { value: new THREE.Vector2(0.5, 0.5) }
+    };
+
+    const material = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: uniforms
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    function resize() {
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+        uniforms.u_resolution.value.set(canvas.clientWidth, canvas.clientHeight);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    document.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        uniforms.u_mouse.value.set(
+            e.clientX - rect.left,
+            canvas.clientHeight - (e.clientY - rect.top)
+        );
+    });
+
+    function animate(time) {
+        uniforms.u_time.value = time * 0.001;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    // Intersection Observer for scroll reveals
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach((el) => {
+        observer.observe(el);
+    });
+
+    // Navigation scroll effect
+    const header = document.getElementById('main-header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            header.classList.add('nav-scrolled');
+        } else {
+            header.classList.remove('nav-scrolled');
+        }
+    });
+</script>
+</body></html>
