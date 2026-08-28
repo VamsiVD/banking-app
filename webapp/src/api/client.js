@@ -16,7 +16,7 @@
 
 import { clearSession, loadSession } from '../auth.js'
 
-const BASE = '/api'
+const BASE = 'https://banking-app-sam.onrender.com/api'
 
 export class ApiError extends Error {
   constructor(message, { status, code, cause } = {}) {
