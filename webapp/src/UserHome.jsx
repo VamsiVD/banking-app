@@ -17,6 +17,7 @@ const ACTION_LABELS = {
     transfer: { title: 'Transfer between accounts', submit: 'Send Transfer' },
     deposit: { title: 'Deposit funds', submit: 'Deposit' },
     withdraw: { title: 'Withdraw funds', submit: 'Withdraw' },
+    statement: { title: 'Account statement', submit: 'Get Statement' },
 }
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
@@ -64,8 +65,7 @@ function UserHome({ user, onBack }) {
     const [subscriptionError, setSubscriptionError] = useState(null)
     const [deletingSubscriptionId, setDeletingSubscriptionId] = useState(null)
 
-    // Which Quick Action form is open — 'transfer' | 'deposit' | 'withdraw' | null.
-    // Statement has no form; it stays inert until statements.py is built.
+    // Which Quick Action form is open — 'transfer' | 'deposit' | 'withdraw' | 'statement' | null.
     const [activeAction, setActiveAction] = useState(null)
     const [actionAccount, setActionAccount] = useState('')
     const [toAccount, setToAccount] = useState('')
@@ -73,6 +73,7 @@ function UserHome({ user, onBack }) {
     const [description, setDescription] = useState('')
     const [submittingAction, setSubmittingAction] = useState(false)
     const [actionError, setActionError] = useState(null)
+    const [statementResult, setStatementResult] = useState(null)
 
     const load = useCallback(async () => {
         setLoading(true)
@@ -132,6 +133,7 @@ function UserHome({ user, onBack }) {
         setAmount('')
         setDescription('')
         setActionError(null)
+        setStatementResult(null)
     }
 
     async function handleActionSubmit(event) {
@@ -139,6 +141,7 @@ function UserHome({ user, onBack }) {
         setSubmittingAction(true)
         setActionError(null)
         setNotice(null)
+        setStatementResult(null)
         try {
             if (activeAction === 'deposit') {
                 const txn = await api.post(`/accounts/${actionAccount}/deposit`, {
@@ -166,9 +169,16 @@ function UserHome({ user, onBack }) {
                 setNotice(
                     `Transferred ${formatMoney(result.debit.amount)} ${result.debit.currency} from #${actionAccount} to #${toAccount}.`,
                 )
+            } else if (activeAction === 'statement') {
+                // Read-only: leave the panel open so the figures stay visible,
+                // and skip `load()` — nothing about the account data changed.
+                setStatementResult(await api.get(`/accounts/${actionAccount}/statement`))
             }
-            setActiveAction(null)
-            await load()
+
+            if (activeAction !== 'statement') {
+                setActiveAction(null)
+                await load()
+            }
         } catch (err) {
             setActionError(err.message)
         } finally {
@@ -374,8 +384,13 @@ function UserHome({ user, onBack }) {
                         >
                             Withdraw
                         </button>
-                        {/* Statement is inert for now — statements.py has no endpoint yet. */}
-                        <button type="button">Statement</button>
+                        <button
+                            type="button"
+                            disabled={accounts.length === 0}
+                            onClick={() => openAction('statement')}
+                        >
+                            Statement
+                        </button>
                     </div>
 
                     {activeAction && (
@@ -411,17 +426,19 @@ function UserHome({ user, onBack }) {
                                     </label>
                                 )}
 
-                                <label>
-                                    Amount
-                                    <input
-                                        type="number"
-                                        min="0.01"
-                                        step="0.01"
-                                        value={amount}
-                                        onChange={(event) => setAmount(event.target.value)}
-                                        required
-                                    />
-                                </label>
+                                {activeAction !== 'statement' && (
+                                    <label>
+                                        Amount
+                                        <input
+                                            type="number"
+                                            min="0.01"
+                                            step="0.01"
+                                            value={amount}
+                                            onChange={(event) => setAmount(event.target.value)}
+                                            required
+                                        />
+                                    </label>
+                                )}
 
                             </div>
 
@@ -439,6 +456,39 @@ function UserHome({ user, onBack }) {
                                     Cancel
                                 </button>
                             </div>
+
+                            {activeAction === 'statement' && statementResult && (
+                                <div className="statement-result">
+                                    <div className="statement-result-row">
+                                        <span>Opening balance</span>
+                                        <strong>
+                                            {formatMoney(statementResult.opening_balance)} {statementResult.currency}
+                                        </strong>
+                                    </div>
+                                    <div className="statement-result-row">
+                                        <span>Closing balance</span>
+                                        <strong>
+                                            {formatMoney(statementResult.closing_balance)} {statementResult.currency}
+                                        </strong>
+                                    </div>
+                                    <div className="statement-result-row">
+                                        <span>Total in</span>
+                                        <strong>
+                                            {formatMoney(statementResult.total_in)} {statementResult.currency}
+                                        </strong>
+                                    </div>
+                                    <div className="statement-result-row">
+                                        <span>Total out</span>
+                                        <strong>
+                                            {formatMoney(statementResult.total_out)} {statementResult.currency}
+                                        </strong>
+                                    </div>
+                                    <div className="statement-result-row">
+                                        <span>Entries</span>
+                                        <strong>{statementResult.entry_count}</strong>
+                                    </div>
+                                </div>
+                            )}
                         </form>
                     )}
                 </section>
