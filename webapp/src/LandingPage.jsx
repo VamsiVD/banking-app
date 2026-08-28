@@ -47,7 +47,7 @@ function TrustIcon({ name }) {
   }
 }
 
-export default function LandingPage({ onGetStarted }) {
+export default function LandingPage({ onLogin, onGetStarted }) {
   return (
     <div className="landing">
       <header className="landing-header">
@@ -57,7 +57,7 @@ export default function LandingPage({ onGetStarted }) {
           </div>
 
           <div className="landing-actions">
-            <button type="button" className="landing-login-btn" onClick={onGetStarted}>
+            <button type="button" className="landing-login-btn" onClick={onLogin}>
               Login
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M14 5l7 7-7 7M4 12h16" strokeLinecap="round" strokeLinejoin="round" />

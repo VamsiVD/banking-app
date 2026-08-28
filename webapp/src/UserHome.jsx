@@ -19,6 +19,27 @@ const ACTION_LABELS = {
     withdraw: { title: 'Withdraw funds', submit: 'Withdraw' },
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
+function capitalize(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
+// Money is a Decimal server-side, so `amount` arrives as a string (see
+// formatMoney's comment above) — Number() here is only for arithmetic on the
+// summary totals, never for display.
+function monthlyEquivalent(subscription) {
+    const amount = Number(subscription.amount)
+    return subscription.billing_cycle === 'yearly' ? amount / 12 : amount
+}
+
+function daysUntil(dateString) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const target = new Date(dateString)
+    return Math.round((target - today) / MS_PER_DAY)
+}
+
 function UserHome({ user, onBack }) {
     const [fullName, setFullName] = useState(user.email)
     const [accounts, setAccounts] = useState([])
@@ -31,6 +52,17 @@ function UserHome({ user, onBack }) {
     const [newAccountType, setNewAccountType] = useState('checking')
     const [creatingAccount, setCreatingAccount] = useState(false)
     const [createError, setCreateError] = useState(null)
+
+    const [subscriptions, setSubscriptions] = useState([])
+    const [showAddSubscription, setShowAddSubscription] = useState(false)
+    const [subName, setSubName] = useState('')
+    const [subAmount, setSubAmount] = useState('')
+    const [subCurrency, setSubCurrency] = useState('USD')
+    const [subBillingCycle, setSubBillingCycle] = useState('monthly')
+    const [subNextBillingDate, setSubNextBillingDate] = useState('')
+    const [creatingSubscription, setCreatingSubscription] = useState(false)
+    const [subscriptionError, setSubscriptionError] = useState(null)
+    const [deletingSubscriptionId, setDeletingSubscriptionId] = useState(null)
 
     // Which Quick Action form is open — 'transfer' | 'deposit' | 'withdraw' | null.
     // Statement has no form; it stays inert until statements.py is built.
@@ -77,6 +109,11 @@ function UserHome({ user, onBack }) {
                 (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
             )
             setTransfers(merged.slice(0, 10))
+
+            // Scoped to the caller by owner_id server-side already — no
+            // client-side filtering needed, unlike the accounts list above.
+            const ownSubscriptions = await api.get('/subscriptions/')
+            setSubscriptions(ownSubscriptions)
         } catch (err) {
             setError(err.message)
         } finally {
@@ -159,6 +196,52 @@ function UserHome({ user, onBack }) {
             setCreatingAccount(false)
         }
     }
+
+    async function handleCreateSubscription(event) {
+        event.preventDefault()
+        setCreatingSubscription(true)
+        setSubscriptionError(null)
+        try {
+            const created = await api.post('/subscriptions/', {
+                name: subName,
+                amount: subAmount,
+                currency: subCurrency,
+                billing_cycle: subBillingCycle,
+                next_billing_date: subNextBillingDate,
+            })
+            setSubscriptions((current) => [...current, created])
+            setShowAddSubscription(false)
+            setSubName('')
+            setSubAmount('')
+            setSubCurrency('USD')
+            setSubBillingCycle('monthly')
+            setSubNextBillingDate('')
+        } catch (err) {
+            setSubscriptionError(err.message)
+        } finally {
+            setCreatingSubscription(false)
+        }
+    }
+
+    async function handleDeleteSubscription(id) {
+        setDeletingSubscriptionId(id)
+        setSubscriptionError(null)
+        try {
+            await api.delete(`/subscriptions/${id}`)
+            setSubscriptions((current) => current.filter((sub) => sub.id !== id))
+        } catch (err) {
+            setSubscriptionError(err.message)
+        } finally {
+            setDeletingSubscriptionId(null)
+        }
+    }
+
+    const monthlySpend = subscriptions.reduce((sum, sub) => sum + monthlyEquivalent(sub), 0)
+    const annualSpend = monthlySpend * 12
+    const upcomingRenewals = subscriptions.filter((sub) => {
+        const days = daysUntil(sub.next_billing_date)
+        return days >= 0 && days <= 7
+    })
 
     return (
         <main className="user-home">
@@ -385,6 +468,155 @@ function UserHome({ user, onBack }) {
                                 <strong>
                                     {formatMoney(transfer.amount)} {transfer.currency}
                                 </strong>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section>
+                    <div className="section-head">
+                        <h2>Subscriptions</h2>
+                        <button
+                            type="button"
+                            className="ghost"
+                            onClick={() => {
+                                setShowAddSubscription((current) => !current)
+                                setSubscriptionError(null)
+                            }}
+                        >
+                            {showAddSubscription ? 'Cancel' : 'Add Subscription'}
+                        </button>
+                    </div>
+
+                    <div className="subscription-summary">
+                        <div className="subscription-summary-card">
+                            <span className="subscription-summary-label">Monthly Spend</span>
+                            <strong>{formatMoney(monthlySpend)} USD</strong>
+                        </div>
+                        <div className="subscription-summary-card">
+                            <span className="subscription-summary-label">Annual Spend</span>
+                            <strong>{formatMoney(annualSpend)} USD</strong>
+                        </div>
+                        <div className="subscription-summary-card subscription-summary-highlight">
+                            <span className="subscription-summary-label">Renewing in 7 Days</span>
+                            <strong>{upcomingRenewals.length}</strong>
+                        </div>
+                    </div>
+
+                    {showAddSubscription && (
+                        <form className="new-account-form" onSubmit={handleCreateSubscription}>
+                            <label htmlFor="sub-name">
+                                Service name
+                                <input
+                                    id="sub-name"
+                                    type="text"
+                                    value={subName}
+                                    onChange={(event) => setSubName(event.target.value)}
+                                    required
+                                />
+                            </label>
+
+                            <label htmlFor="sub-amount">
+                                Amount
+                                <input
+                                    id="sub-amount"
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    value={subAmount}
+                                    onChange={(event) => setSubAmount(event.target.value)}
+                                    required
+                                />
+                            </label>
+
+                            <label htmlFor="sub-currency">
+                                Currency
+                                <input
+                                    id="sub-currency"
+                                    type="text"
+                                    value={subCurrency}
+                                    onChange={(event) => setSubCurrency(event.target.value.toUpperCase())}
+                                    maxLength={3}
+                                    pattern="[A-Z]{3}"
+                                    title="Three-letter currency code, e.g. USD"
+                                    required
+                                />
+                            </label>
+
+                            <label htmlFor="sub-billing-cycle">
+                                Billing cycle
+                                <select
+                                    id="sub-billing-cycle"
+                                    value={subBillingCycle}
+                                    onChange={(event) => setSubBillingCycle(event.target.value)}
+                                >
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </label>
+
+                            <label htmlFor="sub-next-billing-date">
+                                Next billing date
+                                <input
+                                    id="sub-next-billing-date"
+                                    type="date"
+                                    value={subNextBillingDate}
+                                    onChange={(event) => setSubNextBillingDate(event.target.value)}
+                                    required
+                                />
+                            </label>
+
+                            {subscriptionError && (
+                                <p className="banner banner-error" role="alert">
+                                    {subscriptionError}
+                                </p>
+                            )}
+
+                            <button type="submit" disabled={creatingSubscription}>
+                                {creatingSubscription ? 'Adding…' : 'Add Subscription'}
+                            </button>
+                        </form>
+                    )}
+
+                    {!showAddSubscription && subscriptionError && (
+                        <p className="banner banner-error" role="alert">
+                            {subscriptionError}
+                        </p>
+                    )}
+
+                    <div className="account-table">
+                        <div className="account-row subscription-row account-header">
+                            <span>Service</span>
+                            <span>Cycle</span>
+                            <span>Amount</span>
+                            <span>Next Billing</span>
+                            <span>Actions</span>
+                        </div>
+
+                        {loading && subscriptions.length === 0 && (
+                            <p className="empty">Loading subscriptions…</p>
+                        )}
+
+                        {!loading && subscriptions.length === 0 && (
+                            <p className="empty">No subscriptions yet.</p>
+                        )}
+
+                        {subscriptions.map((subscription) => (
+                            <div className="account-row subscription-row" key={subscription.id}>
+                                <span>{subscription.name}</span>
+                                <span>{capitalize(subscription.billing_cycle)}</span>
+                                <strong>
+                                    {formatMoney(subscription.amount)} {subscription.currency}
+                                </strong>
+                                <span>{subscription.next_billing_date}</span>
+                                <button
+                                    type="button"
+                                    className="ghost"
+                                    disabled={deletingSubscriptionId === subscription.id}
+                                    onClick={() => handleDeleteSubscription(subscription.id)}
+                                >
+                                    {deletingSubscriptionId === subscription.id ? 'Removing…' : 'Cancel'}
+                                </button>
                             </div>
                         ))}
                     </div>

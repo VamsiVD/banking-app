@@ -148,13 +148,27 @@
   text-align: left;
 }
 
-.user-home .new-account-form select {
+.user-home .new-account-form select,
+.user-home .new-account-form input {
   padding: 8px 10px;
   border: 1px solid #c3cad3;
   border-radius: 3px;
   font-size: 14px;
   min-width: 180px;
+  color: #172b4d;
   background: white;
+}
+
+.user-home .new-account-form input:hover,
+.user-home .new-account-form select:hover {
+  border-color: #aeb8c5;
+}
+
+.user-home .new-account-form input:focus,
+.user-home .new-account-form select:focus {
+  outline: none;
+  border-color: #1769aa;
+  box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
 }
 
 .user-home .new-account-form button[type='submit'] {
@@ -176,6 +190,59 @@
 .user-home .new-account-form .banner {
   flex-basis: 100%;
   margin: 0;
+}
+
+.user-home .subscription-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.user-home .subscription-summary-card {
+  flex: 1 1 200px;
+  background: white;
+  border: 1px solid #dfe3e8;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-home .subscription-summary-label {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-home .subscription-summary-card strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.user-home .subscription-summary-highlight {
+  background: #eaf2fa;
+  border-color: #bcd8ef;
+}
+
+.user-home .subscription-summary-highlight strong {
+  color: #1769aa;
+}
+
+/* .account-row has no column-gap because its money column is always last;
+   here Amount sits mid-row, so a right-aligned <strong> butts against the
+   next cell without one. */
+.user-home .subscription-row {
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1.3fr;
+  column-gap: 16px;
+}
+
+/* .account-row right-aligns <strong> because Balance is always its last
+   column; Amount sits mid-row here, so right-aligning it strands it away
+   from the "Amount" header above. Keep it left-aligned like every other
+   cell instead. */
+.user-home .account-row.subscription-row strong {
+  justify-self: start;
 }
 
 .user-home .account-table,
@@ -224,7 +291,7 @@
 
 .user-home .account-row strong,
 .user-home .transaction-row strong {
-  text-align: right;
+  justify-self: end;
   font-variant-numeric: tabular-nums;
 }
 

@@ -74,7 +74,7 @@ function App() {
   }
 
   if (!session && showLanding) {
-    return <LandingPage onGetStarted={() => { setShowLanding(false); setShowCreateAccount(true) }} />
+    return <LandingPage onLogin={() => setShowLanding(false)} onGetStarted={() => { setShowLanding(false); setShowCreateAccount(true) }} />
   }
 
   if (showCreateAccount) {
@@ -82,6 +82,7 @@ function App() {
       <CreateAccount
         onBack={() => {
           setShowCreateAccount(false)
+          setShowLanding(true)
           setError(null)
         }}
       />
