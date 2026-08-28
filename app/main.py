@@ -20,6 +20,7 @@ so several people can work in parallel without colliding on it.
 import sys
 
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # Before any app.* import, so app.config sees DATABASE_URL from .env.
 load_dotenv()
@@ -52,7 +53,7 @@ async def lifespan(_: FastAPI):
     try:
         db.check_connection()
     except SQLAlchemyError as exc:
-        print( 
+        print(
             "\nCannot reach PostgreSQL.\n"
             "  1. Is it running?      docker compose up -d --wait\n"
             "  2. Is .env present?    cp .env.example .env\n"
@@ -70,6 +71,17 @@ app = FastAPI(
     version="0.2.0",
     description="Training project. PostgreSQL-backed.",
     lifespan=lifespan,
+)
+
+# allows the deployed frontend to make requests to the API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://banking-app-frontend-sam.onrender.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Gives every request a session and cleans it up afterwards. Added before the
