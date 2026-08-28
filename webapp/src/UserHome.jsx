@@ -41,6 +41,39 @@ function daysUntil(dateString) {
     return Math.round((target - today) / MS_PER_DAY)
 }
 
+const ACTION_ICONS = {
+    transfer: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M4 8h13M13 4l4 4-4 4M20 16H7m4 4-4-4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    ),
+    deposit: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    ),
+    withdraw: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M12 20V9m0 0 4 4m-4-4-4 4M5 5h14" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    ),
+    statement: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M7 3h8l4 4v14H7z" strokeLinejoin="round" />
+            <path d="M9 12h6M9 16h6M9 8h2" strokeLinecap="round" />
+        </svg>
+    ),
+}
+
+function AccountIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="7" width="18" height="12" rx="1.5" />
+            <path d="M3 10h18M7 15h4" strokeLinecap="round" />
+        </svg>
+    )
+}
+
 function UserHome({ user, onBack }) {
     const [fullName, setFullName] = useState(user.email)
     const [accounts, setAccounts] = useState([])
@@ -253,14 +286,21 @@ function UserHome({ user, onBack }) {
         return days >= 0 && days <= 7
     })
 
+    // Grouped by currency rather than summed blindly across all of them — an
+    // account balance in USD and one in EUR are not the same number.
+    const balanceByCurrency = accounts.reduce((totals, account) => {
+        totals[account.currency] = (totals[account.currency] ?? 0) + Number(account.balance)
+        return totals
+    }, {})
+
     return (
         <main className="user-home">
             <header className="top-bar">
-                <div>
-                    <h1>Banks-<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>R</span>-Us</h1>
+                <div className="brand">
+                    Banks-<span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>R</span>-Us
                 </div>
 
-                <button type="button" onClick={onBack}>
+                <button type="button" className="sign-out-btn" onClick={onBack}>
                     Sign Out
                 </button>
             </header>
@@ -277,15 +317,29 @@ function UserHome({ user, onBack }) {
                     </p>
                 )}
 
-                <section className="summary">
-                    <h1>Account Overview</h1>
-                    <h2 className="user-greeting">
-                        Welcome, {fullName}
-                    </h2>
-                    <p>{user.email}</p>
+                <section className="hero">
+                    <h1 className="hero-greeting">Welcome back, {fullName}.</h1>
+
+                    <div className="balance-card">
+                        <span className="balance-label">Total Balance</span>
+
+                        {Object.keys(balanceByCurrency).length === 0 ? (
+                            <div className="balance-amount">—</div>
+                        ) : (
+                            Object.entries(balanceByCurrency).map(([currency, total]) => (
+                                <div className="balance-amount" key={currency}>
+                                    {formatMoney(total.toFixed(2))} {currency}
+                                </div>
+                            ))
+                        )}
+
+                        <span className="balance-sub">
+                            {accounts.length} account{accounts.length === 1 ? '' : 's'}
+                        </span>
+                    </div>
                 </section>
 
-                <section>
+                <section className="section-accounts">
                     <div className="section-head">
                         <h2>Your Accounts</h2>
                         <button
@@ -328,15 +382,7 @@ function UserHome({ user, onBack }) {
                         </form>
                     )}
 
-                    <div className="account-table">
-                        <div className="account-row account-header">
-                            <span>Account</span>
-                            <span>Type</span>
-                            <span>Status</span>
-                            <span>Opened</span>
-                            <span>Balance</span>
-                        </div>
-
+                    <div className="account-grid">
                         {loading && accounts.length === 0 && (
                             <p className="empty">Loading accounts…</p>
                         )}
@@ -346,49 +392,65 @@ function UserHome({ user, onBack }) {
                         )}
 
                         {accounts.map((account) => (
-                            <div className="account-row" key={account.account_number}>
-                                <span>#{account.account_number}</span>
-                                <span>{account.account_type.replace('_', ' ')}</span>
-                                <span>{account.status}</span>
-                                <span>{account.date_opened}</span>
-                                <strong>
+                            <div className="account-card" key={account.account_number}>
+                                <div className="account-card-head">
+                                    <span className="account-icon">
+                                        <AccountIcon />
+                                    </span>
+                                    <span className={`status-pill status-${account.status}`}>
+                                        {account.status}
+                                    </span>
+                                </div>
+                                <div className="account-type">{account.account_type.replace('_', ' ')}</div>
+                                <div className="account-balance">
                                     {formatMoney(account.balance)} {account.currency}
-                                </strong>
+                                </div>
+                                <div className="account-meta">
+                                    #{account.account_number} · opened {account.date_opened}
+                                </div>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                <section>
+                <section className="section-quick-actions">
                     <h2>Quick Actions</h2>
 
                     <div className="action-row">
                         <button
                             type="button"
+                            className="qa-btn qa-btn-primary"
                             disabled={accounts.length === 0}
                             onClick={() => openAction('transfer')}
                         >
+                            <span className="qa-icon">{ACTION_ICONS.transfer}</span>
                             Transfer
                         </button>
                         <button
                             type="button"
+                            className="qa-btn qa-btn-primary"
                             disabled={accounts.length === 0}
                             onClick={() => openAction('deposit')}
                         >
+                            <span className="qa-icon">{ACTION_ICONS.deposit}</span>
                             Deposit
                         </button>
                         <button
                             type="button"
+                            className="qa-btn qa-btn-primary"
                             disabled={accounts.length === 0}
                             onClick={() => openAction('withdraw')}
                         >
+                            <span className="qa-icon">{ACTION_ICONS.withdraw}</span>
                             Withdraw
                         </button>
                         <button
                             type="button"
+                            className="qa-btn qa-btn-primary"
                             disabled={accounts.length === 0}
                             onClick={() => openAction('statement')}
                         >
+                            <span className="qa-icon">{ACTION_ICONS.statement}</span>
                             Statement
                         </button>
                     </div>
@@ -493,7 +555,7 @@ function UserHome({ user, onBack }) {
                     )}
                 </section>
 
-                <section>
+                <section className="section-transfers">
                     <h2>Recent Transfers</h2>
 
                     <div className="transaction-table">
@@ -523,7 +585,7 @@ function UserHome({ user, onBack }) {
                     </div>
                 </section>
 
-                <section>
+                <section className="section-subscriptions">
                     <div className="section-head">
                         <h2>Subscriptions</h2>
                         <button
