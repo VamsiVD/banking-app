@@ -1,13 +1,37 @@
 /* Every rule is scoped under .user-home on purpose — see AdminHome.css for why:
  * Vite bundles component CSS globally, so an unscoped `.account-row` here and
  * one in AdminHome.css are the same rule fighting over the same properties.
+ *
+ * Palette matches LandingPage.css (the "Institutional Trust" design system)
+ * so the marketing site and the dashboard read as one product.
  */
 
 .user-home {
+  --navy: #0a2540;
+  --navy-deep: #000f22;
+  --blue: #0762ff;
+  --blue-dark: #004ccc;
+  --surface: #f7fafd;
+  --surface-card: #ffffff;
+  --surface-muted: #f1f4f7;
+  --border: #e0e3e6;
+  --text: #181c1e;
+  --text-muted: #43474d;
+  --success: #008a3d;
+  --success-bg: #e6f4ea;
+  --danger: #ba1a1a;
+  --danger-bg: #fdeaea;
+
   min-height: 100vh;
-  background: #f4f5f7;
-  color: #172b4d;
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+.user-home svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 /* index.css sets `h1, h2 { color: var(--text-h) }`, which is near-white under
@@ -15,48 +39,49 @@
    from .user-home, so without this every heading is white on a white card. */
 .user-home h1,
 .user-home h2 {
-  color: #172b4d;
+  color: var(--navy);
 }
 
 .user-home .top-bar {
-  background: white;
-  border-bottom: 1px solid #d9dce1;
-  padding: 22px 48px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  height: 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.user-home .top-bar h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
+.user-home .top-bar .brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy-deep);
 }
 
-.user-home .top-bar p {
-  margin: 5px 0 0;
-  color: #667085;
+.user-home .sign-out-btn {
+  border: none;
+  background: none;
+  color: var(--blue-dark);
   font-size: 14px;
-}
-
-.user-home .top-bar button {
-  border: 1px solid #1769aa;
-  background: white;
-  color: #1769aa;
-  padding: 10px 18px;
-  border-radius: 3px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.user-home .sign-out-btn:hover {
+  color: var(--navy);
 }
 
 .user-home .page-content {
   max-width: 1180px;
   margin: 0 auto;
   padding: 38px 48px 60px;
-}
-
-.user-home .page-content section {
-  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 .user-home .page-content h2 {
@@ -65,31 +90,40 @@
   font-weight: 600;
 }
 
-.user-home .summary {
-  border-bottom: 1px solid #d9dce1;
-  padding-bottom: 24px;
+/* Visual order follows the design (Hero, Quick Actions, Accounts, Transfers,
+   Subscriptions); DOM order stays as written so the Accounts markup can sit
+   next to the code it shares the most with. */
+.user-home .section-quick-actions {
+  order: 1;
 }
 
-.user-home .summary p {
-  margin: 0;
-  color: #667085;
+.user-home .section-accounts {
+  order: 2;
+}
+
+.user-home .section-transfers {
+  order: 3;
+}
+
+.user-home .section-subscriptions {
+  order: 4;
 }
 
 .user-home .banner {
-  margin: 0 0 22px;
+  margin: 0;
   padding: 13px 16px;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 14px;
 }
 
 .user-home .banner-error {
-  background: #fdeaea;
+  background: var(--danger-bg);
   border: 1px solid #f0b4b4;
   color: #8a1f1f;
 }
 
 .user-home .banner-notice {
-  background: #e8f4ec;
+  background: var(--success-bg);
   border: 1px solid #a8d5ba;
   color: #1c5a34;
 }
@@ -97,7 +131,7 @@
 .user-home .empty {
   margin: 0;
   padding: 20px 18px;
-  color: #667085;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -108,14 +142,19 @@
 }
 
 .user-home button.ghost {
-  border: 1px solid #c3cad3;
+  border: 1px solid var(--border);
   background: white;
-  color: #172b4d;
+  color: var(--navy);
   padding: 7px 14px;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.user-home button.ghost:hover {
+  border-color: var(--blue-dark);
+  color: var(--blue-dark);
 }
 
 .user-home button.ghost:disabled {
@@ -123,13 +162,111 @@
   cursor: default;
 }
 
+/* Hero */
+.user-home .hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user-home .hero-greeting {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.user-home .balance-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-home .balance-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.user-home .balance-amount {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.user-home .balance-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Quick Actions */
+.user-home .action-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.user-home .qa-btn {
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.user-home .qa-btn:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+
+.user-home .qa-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.user-home .qa-btn-primary {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+  color: #ffffff;
+}
+
+.user-home .qa-btn-primary:hover:not(:disabled) {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.user-home .qa-icon {
+  display: flex;
+}
+
+@media (max-width: 700px) {
+  .user-home .action-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Forms — new-account-form (accounts + subscriptions) and quick-action-form
+   (transfer/deposit/withdraw/statement) share these input/select rules. */
 .user-home .new-account-form {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
   gap: 16px;
-  background: white;
-  border: 1px solid #dfe3e8;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 18px;
   margin-bottom: 16px;
 }
@@ -140,7 +277,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #667085;
+  color: var(--text-muted);
   /* index.css sets `#root { text-align: center }` for the marketing template.
      A column-flex label stretches its text to the input's full width, and
      centered text in that wide box reads as randomly indented, not aligned
@@ -148,24 +285,42 @@
   text-align: left;
 }
 
-.user-home .new-account-form select {
+.user-home .new-account-form select,
+.user-home .new-account-form input {
   padding: 8px 10px;
   border: 1px solid #c3cad3;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 14px;
   min-width: 180px;
+  color: var(--text);
   background: white;
 }
 
+.user-home .new-account-form input:hover,
+.user-home .new-account-form select:hover {
+  border-color: #aeb8c5;
+}
+
+.user-home .new-account-form input:focus,
+.user-home .new-account-form select:focus {
+  outline: none;
+  border-color: var(--blue-dark);
+  box-shadow: 0 0 0 3px rgba(0, 76, 204, 0.1);
+}
+
 .user-home .new-account-form button[type='submit'] {
-  background: #1769aa;
+  background: var(--blue-dark);
   color: white;
   border: none;
-  border-radius: 3px;
+  border-radius: 4px;
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.user-home .new-account-form button[type='submit']:hover {
+  background: var(--blue);
 }
 
 .user-home .new-account-form button[type='submit']:disabled {
@@ -178,10 +333,100 @@
   margin: 0;
 }
 
+/* Account cards */
+.user-home .account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.user-home .account-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.user-home .account-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(10, 37, 64, 0.08);
+}
+
+.user-home .account-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-home .account-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+}
+
+.user-home .status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.user-home .status-active {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.user-home .status-frozen,
+.user-home .status-inactive {
+  background: #fff4e5;
+  color: #8a5300;
+}
+
+.user-home .status-closed {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.user-home .account-type {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.user-home .account-balance {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.user-home .account-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Tables — Recent Transfers, and (via .subscription-row) Subscriptions */
 .user-home .account-table,
 .user-home .transaction-table {
-  background: white;
-  border: 1px solid #dfe3e8;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .user-home .account-row,
@@ -190,7 +435,7 @@
   align-items: center;
   min-height: 58px;
   padding: 0 18px;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--surface-muted);
 }
 
 .user-home .account-row {
@@ -206,15 +451,23 @@
   border-bottom: none;
 }
 
-/* Matches AdminHome's table headers on purpose — same neutral grey, not the
-   brand blue, so the header row reads as a label strip, not another button. */
+.user-home .account-row:hover,
+.user-home .transaction-row:hover {
+  background: var(--surface);
+}
+
 .user-home .account-header,
 .user-home .transaction-header {
-  background: #eef1f4;
+  background: var(--surface-muted);
   min-height: 45px;
-  color: #667085;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 600;
+}
+
+.user-home .account-header:hover,
+.user-home .transaction-header:hover {
+  background: var(--surface-muted);
 }
 
 .user-home .account-row span,
@@ -224,43 +477,70 @@
 
 .user-home .account-row strong,
 .user-home .transaction-row strong {
-  text-align: right;
+  justify-self: end;
   font-variant-numeric: tabular-nums;
 }
 
-.user-home .action-row {
+/* Subscriptions */
+.user-home .subscription-summary {
   display: flex;
-  justify-content: center;
-  gap: 24px;
   flex-wrap: wrap;
-  margin-top: 20px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.user-home .action-row button {
-  min-width: 160px;
-  background: #1769aa;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  padding: 12px 24px;
-  font-size: 14px;
+.user-home .subscription-summary-card {
+  flex: 1 1 200px;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-home .subscription-summary-label {
+  color: var(--text-muted);
+  font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
 }
 
-.user-home .action-row button:hover {
-  background: #12598f;
+.user-home .subscription-summary-card strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
 }
 
-.user-home .action-row button:disabled {
-  opacity: 0.5;
-  cursor: default;
-  background: #1769aa;
+.user-home .subscription-summary-highlight {
+  background: #eaf1ff;
+  border-color: #bcd4ff;
 }
 
+.user-home .subscription-summary-highlight strong {
+  color: var(--blue-dark);
+}
+
+/* .account-row has no column-gap because its money column is always last;
+   here Amount sits mid-row, so a right-aligned <strong> butts against the
+   next cell without one. */
+.user-home .subscription-row {
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr 1.3fr;
+  column-gap: 16px;
+}
+
+/* .account-row right-aligns <strong> because Balance is always its last
+   column; Amount sits mid-row here, so right-aligning it strands it away
+   from the "Amount" header above. Keep it left-aligned like every other
+   cell instead. */
+.user-home .account-row.subscription-row strong {
+  justify-self: start;
+}
+
+/* Quick action form (transfer / deposit / withdraw / statement) */
 .user-home .quick-action-form {
-  background: white;
-  border: 1px solid #dfe3e8;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 20px;
   margin-top: 20px;
 }
@@ -269,6 +549,7 @@
   margin: 0 0 16px;
   font-size: 16px;
   font-weight: 600;
+  color: var(--navy);
 }
 
 .user-home .quick-action-fields {
@@ -284,26 +565,20 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #667085;
+  color: var(--text-muted);
   flex: 1 1 200px;
   /* Same #root { text-align: center } leak as .new-account-form label. */
   text-align: left;
-}
-
-.user-home .quick-action-fields .optional {
-  font-weight: 400;
-  text-transform: none;
-  color: #8a93a6;
 }
 
 .user-home .quick-action-fields select,
 .user-home .quick-action-fields input {
   padding: 8px 10px;
   border: 1px solid #c3cad3;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 14px;
   font-weight: 400;
-  color: #172b4d;
+  color: var(--text);
   background: white;
   width: 100%;
   height: 38px;
@@ -318,8 +593,8 @@
 
 .user-home .quick-action-fields select:focus,
 .user-home .quick-action-fields input:focus {
-  border-color: #1769aa;
-  box-shadow: 0 0 0 3px rgba(23, 105, 170, 0.1);
+  border-color: var(--blue-dark);
+  box-shadow: 0 0 0 3px rgba(0, 76, 204, 0.1);
 }
 
 .user-home .quick-action-buttons {
@@ -329,14 +604,18 @@
 }
 
 .user-home .quick-action-buttons button[type='submit'] {
-  background: #1769aa;
+  background: var(--blue-dark);
   color: white;
   border: none;
-  border-radius: 3px;
+  border-radius: 4px;
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.user-home .quick-action-buttons button[type='submit']:hover {
+  background: var(--blue);
 }
 
 .user-home .quick-action-buttons button[type='submit']:disabled {
@@ -344,12 +623,36 @@
   cursor: default;
 }
 
-@media (max-width: 800px) {
+.user-home .statement-result {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--surface-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
 
+.user-home .statement-result-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.user-home .statement-result-row strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--navy);
+}
+
+@media (max-width: 800px) {
   .user-home .top-bar,
   .user-home .page-content {
     padding-left: 22px;
     padding-right: 22px;
+  }
+
+  .user-home .balance-amount {
+    font-size: 32px;
   }
 
   .user-home .account-row,
@@ -366,6 +669,6 @@
 
   .user-home .account-row strong,
   .user-home .transaction-row strong {
-    text-align: left;
+    justify-self: start;
   }
 }

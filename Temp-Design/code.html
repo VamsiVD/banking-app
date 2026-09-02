@@ -1,0 +1,391 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Subscription Tracker - Banks-Я-Us</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#74777e",
+                      "primary-container": "#0a2540",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#bdc7dc",
+                      "inverse-primary": "#b0c8eb",
+                      "on-primary-fixed": "#001c37",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#1a2434",
+                      "surface-container-high": "#e5e8eb",
+                      "secondary": "#004ccc",
+                      "surface-container-low": "#f1f4f7",
+                      "on-tertiary-fixed": "#121c2b",
+                      "on-tertiary-container": "#818b9f",
+                      "primary-fixed-dim": "#b0c8eb",
+                      "on-error": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#3d4759",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#f3f3ff",
+                      "outline-variant": "#c4c6ce",
+                      "surface-container-highest": "#e0e3e6",
+                      "inverse-surface": "#2d3133",
+                      "tertiary": "#050e1d",
+                      "secondary-container": "#0762ff",
+                      "primary": "#000f22",
+                      "on-background": "#181c1e",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#b4c5ff",
+                      "surface-variant": "#e0e3e6",
+                      "surface-dim": "#d7dadd",
+                      "inverse-on-surface": "#eef1f4",
+                      "secondary-fixed": "#dbe1ff",
+                      "on-surface-variant": "#43474d",
+                      "background": "#f7fafd",
+                      "on-secondary-fixed": "#00174b",
+                      "on-primary-container": "#768dad",
+                      "surface-tint": "#49607e",
+                      "surface-bright": "#f7fafd",
+                      "on-primary-fixed-variant": "#314865",
+                      "on-secondary-fixed-variant": "#003ea8",
+                      "tertiary-fixed": "#d9e3f9",
+                      "on-surface": "#181c1e",
+                      "primary-fixed": "#d2e4ff",
+                      "on-primary": "#ffffff",
+                      "surface": "#f7fafd",
+                      "surface-container": "#ebeef1",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "48px",
+                      "xs": "4px",
+                      "margin-desktop": "64px",
+                      "gutter": "24px",
+                      "base": "8px",
+                      "margin-mobile": "16px",
+                      "xl": "80px",
+                      "md": "24px",
+                      "sm": "12px",
+                      "max-width": "1280px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 bg-surface border-b border-outline-variant docked full-width top-0 z-10 sticky">
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm px-xs">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A clean, minimalist logo icon suitable for a premium corporate banking application, featuring geometric shapes in deep navy blue on a transparent background, ensuring a high-contrast and professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1256dqTOigHTf0vwBnxrGXXmRMfTW1eT1_s84E84QtKe_90xIUaetJH_3e50qvK2LSaeL7ga-f-4BaZiJLKtZK6GffxdkYclIVfo9yUU53ZBVpdQLAxzsNKwfwagX-TutfP1qFRW1ArtskWiy6OPZ-0fmV1knjUDpLJDDrTYsxMGG4A7ucSpc05WNeL24E-yR1TxKWIsseCVB_-mLi07GASNq27DnhuKsyo0TLAWFFPlDOs-nzwQ">
+<span class="font-headline-md text-headline-md font-bold text-primary mr-md">Banks-Я-Us</span>
+</div>
+<nav class="hidden md:flex gap-md font-label-md text-label-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-secondary font-semibold" href="#">Subscriptions</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Security</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Accounts</a>
+</nav>
+</div>
+<!-- Actions (Right) -->
+<div class="flex items-center gap-sm">
+<!-- Search component placeholder (simplified) -->
+<div class="relative hidden sm:block w-64 mr-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-full border border-outline-variant bg-surface-container-low text-body-sm font-body-sm focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all" placeholder="Search..." type="text">
+</div>
+<button class="p-xs rounded-full hover:bg-surface-container-low transition-colors duration-200 active:opacity-80 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-xs rounded-full hover:bg-surface-container-low transition-colors duration-200 active:opacity-80 text-on-surface-variant hidden md:block">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-xs rounded-full hover:bg-surface-container-low transition-colors duration-200 active:opacity-80 text-on-surface-variant hidden md:block">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-sm border border-outline-variant cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive, neutral background, high lighting, representing a premium user profile avatar in a banking interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCwHThnmgNQ_VwyUWiFrhBx_ApEooa_O9KrMJhNM7bmRI3SMysCS_ezXkoi9m8WpmiUfi1nCV3C_-7f1UIRfTj0R6O_3KagBjnDNiTqrtgQJXnL4JMCC3dWmyg4NP-KVeHE56A8FurO6KW_Xf3ze6Hoy93t4l5chKTk0_V2UasRPHWGSpbNsSIZAoPqSFugwnMVvqzvEWTBEKCF95j0XebVvdt6MYWU6zsdRTzhpMRaOCB7pLiYKE">
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-h-screen">
+<!-- Page Content Canvas -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop max-w-max-width mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-lg flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Subscription Tracker</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Monitor and manage your recurring institutional expenses.</p>
+</div>
+<button class="bg-primary-container text-on-tertiary font-label-md text-label-md h-10 px-md rounded-lg flex items-center justify-center gap-xs hover:opacity-90 transition-opacity hidden sm:flex">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Add Subscription
+            </button>
+</div>
+<!-- Dashboard Grid Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Main Content Column -->
+<div class="flex flex-col gap-lg xl:col-span-12">
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-sm mb-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+<h3 class="font-label-md text-label-md">Total Monthly Spend</h3>
+</div>
+<p class="font-headline-lg text-headline-lg text-primary">$12,450.00</p>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-xs">↑ 2.4% vs last month</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-sm mb-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+<h3 class="font-label-md text-label-md">Total Annual Spend</h3>
+</div>
+<p class="font-headline-lg text-headline-lg text-primary">$149,400.00</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Projected estimate</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-primary-container text-on-tertiary border border-outline-variant rounded-lg p-md shadow-sm relative overflow-hidden group">
+<!-- Subtle decorative gradient -->
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent opacity-50"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-sm mb-sm text-inverse-primary">
+<span class="material-symbols-outlined text-[20px]">event_upcoming</span>
+<h3 class="font-label-md text-label-md">Upcoming Renewals (7 Days)</h3>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-tertiary">4 Services</p>
+<p class="font-body-sm text-body-sm text-inverse-primary mt-xs">Est. charge: $3,200.00</p>
+</div>
+</div>
+</div>
+<!-- Active Subscriptions Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface">
+<h3 class="font-headline-md text-headline-md text-primary">Active Subscriptions</h3>
+<button class="font-label-md text-label-md text-secondary hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant font-label-md text-label-md text-on-surface-variant">
+<th class="p-md font-medium">Service</th>
+<th class="p-md font-medium">Category</th>
+<th class="p-md font-medium">Monthly Cost</th>
+<th class="p-md font-medium">Renewal Date</th>
+<th class="p-md font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">dns</span>
+</div>
+<span class="font-semibold text-primary">CloudData Pro</span>
+</div>
+</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full border border-outline-variant bg-surface text-on-surface-variant text-[11px] font-medium uppercase tracking-wider">Infrastructure</span>
+</td>
+<td class="p-md font-medium">$4,500.00</td>
+<td class="p-md">Oct 12, 2023</td>
+<td class="p-md text-right space-x-2">
+<button class="text-secondary hover:text-primary-container transition-colors font-label-md">Manage</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors group">
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">bar_chart</span>
+</div>
+<span class="font-semibold text-primary">MarketInsights X</span>
+</div>
+</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full border border-outline-variant bg-surface text-on-surface-variant text-[11px] font-medium uppercase tracking-wider">Analytics</span>
+</td>
+<td class="p-md font-medium">$2,100.00</td>
+<td class="p-md">Oct 15, 2023</td>
+<td class="p-md text-right space-x-2">
+<button class="text-secondary hover:text-primary-container transition-colors font-label-md">Manage</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">security</span>
+</div>
+<span class="font-semibold text-primary">SentinelSec Enterprise</span>
+</div>
+</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full border border-outline-variant bg-surface text-on-surface-variant text-[11px] font-medium uppercase tracking-wider">Security</span>
+</td>
+<td class="p-md font-medium">$3,800.00</td>
+<td class="p-md text-error font-medium">Oct 05, 2023</td>
+<td class="p-md text-right space-x-2">
+<button class="text-secondary hover:text-primary-container transition-colors font-label-md">Manage</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden"><div class="p-md border-b border-outline-variant bg-surface flex items-center gap-sm"><span class="material-symbols-outlined text-secondary">lightbulb</span><h3 class="font-headline-md text-headline-md text-primary">Savings Opportunities</h3></div><div class="p-md space-y-md"><p class="font-body-sm text-body-sm text-on-surface-variant">Review these underutilized services to optimize your monthly expenditure.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-md"><div class="border border-outline-variant rounded-lg p-sm bg-surface hover:border-secondary transition-colors cursor-pointer"><div class="flex justify-between items-start mb-xs"><span class="font-label-md text-label-md text-primary">Legacy CRM Tool</span><span class="font-label-md text-label-md text-secondary">Save $850/mo</span></div><p class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Last active login: 45 days ago across organization.</p><div class="mt-sm flex gap-sm"><button class="px-3 py-1.5 border border-outline text-on-surface-variant rounded font-label-md text-[12px] hover:bg-surface-container transition-colors">Review</button><button class="px-3 py-1.5 bg-surface-container-high text-error rounded font-label-md text-[12px] hover:bg-error-container transition-colors">Cancel Service</button></div></div><div class="border border-outline-variant rounded-lg p-sm bg-surface hover:border-secondary transition-colors cursor-pointer"><div class="flex justify-between items-start mb-xs"><span class="font-label-md text-label-md text-primary">Design Asset Library</span><span class="font-label-md text-label-md text-secondary">Save $200/mo</span></div><p class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Duplicate subscription detected (Marketing Team).</p><div class="mt-sm flex gap-sm"><button class="px-3 py-1.5 border border-outline text-on-surface-variant rounded font-label-md text-[12px] hover:bg-surface-container transition-colors">Review</button></div></div></div></div></div></div>
+<!-- Sidebar Column -->
+
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only per platform rules) -->
+<nav class="md:hidden bg-surface text-secondary font-label-sm text-label-sm-mobile docked full-width bottom-0 rounded-t-xl border-t border-outline-variant shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-high scale-95 duration-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:bg-surface-container-high scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="credit_card">credit_card</span>
+<span class="mt-1">Subs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-high scale-95 duration-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="mt-1">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-high scale-95 duration-100 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="mt-1">Wallet</span>
+</a>
+</nav>
+
+
+
+
+</body></html>

@@ -21,6 +21,45 @@ body {
   padding: 40px 20px;
 }
 
+.back-to-home {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 24px;
+  padding: 8px 16px 8px 12px;
+  border: 1px solid rgba(20, 43, 74, 0.1);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475467;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(24, 39, 58, 0.06);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.back-to-home svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.2s ease;
+}
+
+.back-to-home:hover {
+  color: #1769aa;
+  border-color: rgba(23, 105, 170, 0.3);
+  background: #f5f9fc;
+  transform: translateX(-2px);
+}
+
+.back-to-home:hover svg {
+  transform: translateX(-2px);
+}
+
 .bank-name {
   margin: 0 0 30px;
   font-family: Georgia, "Times New Roman", serif;
