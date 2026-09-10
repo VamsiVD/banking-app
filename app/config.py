@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Base URL of the standalone subscription-tracker service (Lambda + its own
+    # Supabase Postgres). Subscriptions are not stored in DATABASE_URL — see
+    # app/repositories/subscription_repository.py.
+    SUBSCRIPTION_TRACKER_BASE_URL: str
+
 
 @lru_cache
 def get_settings() -> Settings:

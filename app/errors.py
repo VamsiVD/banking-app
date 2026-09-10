@@ -98,6 +98,17 @@ class SubscriptionNotFound(AppError):
     code = "subscription_not_found"
 
 
+class SubscriptionServiceUnavailable(AppError):
+    """The subscription-tracker service didn't answer, or answered with an error.
+
+    A separate Lambda service, not this process's database — so a failure there
+    is an upstream problem, not ours to guess at.
+    """
+
+    status_code = 502
+    code = "subscription_service_unavailable"
+
+
 class InvalidCredentials(AppError):
     status_code = 401
     code = "invalid_credentials"

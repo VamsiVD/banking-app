@@ -1,6 +1,7 @@
 """Subscription domain: types, create request, and stored/returned shape."""
 
-from datetime import date, datetime
+from datetime import date
+
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -9,6 +10,7 @@ from app.api_schemas.primitives import PositiveMoney, Currency
 
 
 class BillingCycle(str, Enum):
+    weekly = "weekly"
     monthly = "monthly"
     yearly = "yearly"
 
@@ -30,8 +32,12 @@ class SubscriptionCreate(BaseModel):
 
 
 class Subscription(SubscriptionCreate):
-    """A subscription as stored and returned by the API."""
+    """A subscription as stored and returned by the API.
+
+    No `created_at`: the subscription-tracker service that now owns this data
+    doesn't hand one back, and fabricating one here would just be a fresh
+    timestamp on every read, not the real creation time.
+    """
 
     id: str
     owner_id: str
-    created_at: datetime
