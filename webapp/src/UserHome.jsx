@@ -668,7 +668,7 @@ function UserHome({ user, onBack }) {
                             </label>
 
                             <label htmlFor="sub-next-billing-date">
-                                Next billing date
+                                Start date
                                 <input
                                     id="sub-next-billing-date"
                                     type="date"
@@ -701,7 +701,7 @@ function UserHome({ user, onBack }) {
                             <span>Service</span>
                             <span>Cycle</span>
                             <span>Amount</span>
-                            <span>Next Billing</span>
+                            <span>Next billing cycle</span>
                             <span>Actions</span>
                         </div>
 
