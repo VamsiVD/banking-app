@@ -5,7 +5,45 @@ via owner_id from the token — the important cases here are less "does CRUD
 work" and more "can one user ever see or touch another user's subscription."
 """
 
+import pytest
+
 from conftest import DEFAULT_OWNER_ID
+from app.clients import subscription_tracker_client
+
+
+class _FakeSubscriptionService:
+    """Stands in for the real Lambda service: same wire shape, in memory.
+
+    Also mirrors its one important quirk — delete takes only a uuid, no owner
+    check — so the cross-owner tests below prove the repository enforces
+    ownership itself, not the fake.
+    """
+
+    def __init__(self):
+        self._rows: dict[str, dict] = {}
+        self._next_id = 1
+
+    def create(self, payload: dict) -> dict:
+        row = {**payload, "uuid": f"fake-{self._next_id}"}
+        self._next_id += 1
+        self._rows[row["uuid"]] = row
+        return dict(row)
+
+    def list_for_owner(self, owner_id: str) -> list[dict]:
+        return [dict(row) for row in self._rows.values() if row["owner_id"] == owner_id]
+
+    def delete(self, subscription_id: str) -> None:
+        self._rows.pop(subscription_id, None)
+
+
+@pytest.fixture(autouse=True)
+def fake_subscription_service(monkeypatch):
+    """Every test in this file hits the fake instead of the real service."""
+    fake = _FakeSubscriptionService()
+    monkeypatch.setattr(subscription_tracker_client, "create", fake.create)
+    monkeypatch.setattr(subscription_tracker_client, "list_for_owner", fake.list_for_owner)
+    monkeypatch.setattr(subscription_tracker_client, "delete", fake.delete)
+    return fake
 
 
 def err(response) -> str:

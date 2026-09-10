@@ -11,7 +11,7 @@ email-validator==2.1.0
 # Auth
 PyJWT==2.8.0
 
-# Testing
+# Testing, and the client to the subscription-tracker service
 pytest==7.4.3
 httpx==0.25.2
 
