@@ -5,10 +5,14 @@ via owner_id from the token — the important cases here are less "does CRUD
 work" and more "can one user ever see or touch another user's subscription."
 """
 
+from datetime import date
+
 import pytest
 
 from conftest import DEFAULT_OWNER_ID
 from app.clients import subscription_tracker_client
+from app.repositories.subscription_repository import _add_months, _next_occurrence
+from app.api_schemas.subscription_schema import BillingCycle
 
 
 class _FakeSubscriptionService:
@@ -211,3 +215,58 @@ def test_deleting_someone_else_s_subscription_is_404_and_does_not_delete_it(clie
 
     assert r.status_code == 404
     assert client.get(f"/subscriptions/{created['id']}", headers=auth_headers).status_code == 200
+
+
+# --------------------------------------------------------------------------
+# next_billing_date: rolled forward from start_date + billing_cycle, live
+# --------------------------------------------------------------------------
+
+
+def test_next_billing_date_is_unchanged_when_start_is_in_the_future():
+    start = date(2027, 1, 1)
+    today = date(2026, 9, 10)
+
+    assert _next_occurrence(start, BillingCycle.monthly, today) == start
+
+
+def test_next_billing_date_rolls_forward_weekly():
+    start = date(2026, 8, 1)
+    today = date(2026, 9, 10)
+
+    # Weeks since start: (40 days) // 7 = 5 -> Sep 5, still before today -> Sep 12.
+    assert _next_occurrence(start, BillingCycle.weekly, today) == date(2026, 9, 12)
+
+
+def test_next_billing_date_rolls_forward_monthly():
+    start = date(2026, 1, 15)
+    today = date(2026, 9, 10)
+
+    assert _next_occurrence(start, BillingCycle.monthly, today) == date(2026, 9, 15)
+
+
+def test_next_billing_date_rolls_forward_yearly():
+    start = date(2020, 9, 1)
+    today = date(2026, 9, 10)
+
+    assert _next_occurrence(start, BillingCycle.yearly, today) == date(2027, 9, 1)
+
+
+def test_next_billing_date_clamps_at_month_end():
+    """Jan 31 + 1 month has no Feb 31 — lands on the last real day of Feb instead."""
+    start = date(2026, 1, 31)
+
+    assert _add_months(start, 1) == date(2026, 2, 28)
+
+
+def test_creating_with_a_past_date_returns_the_rolled_forward_next_billing_date(
+    client, auth_headers
+):
+    r = client.post(
+        "/subscriptions/",
+        json=new_subscription(next_billing_date="2026-01-01", billing_cycle="monthly"),
+        headers=auth_headers,
+    )
+
+    assert r.status_code == 201
+    next_billing_date = date.fromisoformat(r.json()["next_billing_date"])
+    assert next_billing_date >= date.today()
